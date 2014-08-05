@@ -9,5 +9,6 @@
   "keywords": [
     "extjs"
   ],
-  "license": "GPL"
+  "license": "GPL",
+  "ignore": []
 }
