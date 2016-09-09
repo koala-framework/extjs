@@ -106,7 +106,7 @@ Ext.define('Ext.chart.axis.Axis', {
          * like `spacing`, `padding`, `font` that receives a string or number and
          * returns a new string with the modified values.
          *
-         * For more supported values, see the configurations for {@link Ext.chart.label.Label}.
+         * For more supported values, see the configurations for {@link Ext.chart.sprite.Label}.
          */
         label: undefined,
 
@@ -148,13 +148,12 @@ Ext.define('Ext.chart.axis.Axis', {
         limits: null,
 
         /**
-         * @cfg {Function} renderer Allows to change the text shown next the tick.
+         * @cfg {Function} renderer Allows to change the text shown next to the tick.
          * @param {Ext.chart.axis.Axis} axis The axis.
-         * @param {Object} data The renderer data object:
-         * @param {String/Number} data.label The label.
-         * @param {String/Number/null} data.lastLabel The last label (if any).
-         * @param {Object} data.layoutContext The object that holds calculated positions
+         * @param {String/Number} label The label.
+         * @param {Object} layoutContext The object that holds calculated positions
          * of axis' ticks based on current layout, segmenter, axis length and configuration.
+         * @param {String/Number/null} lastLabel The last label (if any).
          * @return {String} The label to display.
          */
         renderer: null,
@@ -253,6 +252,7 @@ Ext.define('Ext.chart.axis.Axis', {
         /**
          * @cfg {Number} [majorTickSteps=0]
          * Forces the number of major ticks to the specified value.
+         * Both {@link #minimum} and {@link #maximum} should be specified.
          */
         majorTickSteps: 0,
 
@@ -559,7 +559,7 @@ Ext.define('Ext.chart.axis.Axis', {
                     titles: new Ext.draw.sprite.Instancing()
                 };
                 me.limits.lines.setTemplate({xclass: 'grid.' + gridAlignment});
-                me.limits.lines.getTemplate().setAttributes({strokeStyle: 'black'});
+                me.limits.lines.getTemplate().setAttributes({strokeStyle: 'black'}, true);
                 me.limits.surface.add(me.limits.lines);
                 axisSprite.bindMarker(gridAlignment + '-limit-lines', me.limits.lines);
 
@@ -626,6 +626,23 @@ Ext.define('Ext.chart.axis.Axis', {
                 if (Ext.isObject(grid.odd)) {
                     gridSprite.getTemplate().setAttributes(grid.odd);
                 }
+            }
+        }
+    },
+    
+    updateMinorTickSteps: function (minorTickSteps) {
+        var me = this,
+            sprites = me.getSprites(),
+            axisSprite = sprites && sprites[0],
+            surface;
+
+        if (axisSprite) {
+            axisSprite.setAttributes({
+                minorTicks: !!minorTickSteps
+            });
+            surface = me.getSurface();
+            if (!me.isConfiguring && surface) {
+                surface.renderFrame();
             }
         }
     },
@@ -819,7 +836,10 @@ Ext.define('Ext.chart.axis.Axis', {
             master[action]('rangechange', 'onMasterAxisRangeChange', slave);
         }
         if (me.masterAxis) {
-            link('un', me, me.masterAxis);
+            if (!me.masterAxis.destroyed) {
+                link('un', me, me.masterAxis);
+            }
+            
             me.masterAxis = null;
         }
         if (masterAxis) {
@@ -867,7 +887,7 @@ Ext.define('Ext.chart.axis.Axis', {
         } else if (me.masterAxis) {
             return me.masterAxis.range;
         }
-        if (Ext.isNumber(me.getMinimum() + me.getMaximum())) {
+        if ( Ext.isNumber(me.getMinimum()) && Ext.isNumber(me.getMaximum()) ) {
             return me.range = [me.getMinimum(), me.getMaximum()];
         }
         var min = Infinity,
@@ -965,7 +985,7 @@ Ext.define('Ext.chart.axis.Axis', {
 
                 attr.min = me.range[0];
                 attr.max = me.range[1];
-                delete context.majorTicks;
+                context.majorTicks = null;
                 layout.calculateLayout(context);
                 majorTicks = context.majorTicks;
                 segmenter.adjustByMajorUnit(majorTicks.step, majorTicks.unit.scale, me.range);
@@ -987,7 +1007,7 @@ Ext.define('Ext.chart.axis.Axis', {
      * @private
      */
     clearRange: function () {
-        delete this.hasClearRangePending;
+        this.hasClearRangePending = null;
         this.range = null;
     },
 
@@ -1038,7 +1058,7 @@ Ext.define('Ext.chart.axis.Axis', {
             position = me.getPosition(),
             initialConfig = me.getInitialConfig(),
             defaultConfig = me.defaultConfig,
-            configs = me.getConfigurator().configs,
+            configs = me.self.getConfigurator().configs,
             genericAxisTheme = axisTheme.defaults,
             specificAxisTheme = axisTheme[position],
             themeOnlyIfConfigured = me.themeOnlyIfConfigured,
@@ -1147,7 +1167,7 @@ Ext.define('Ext.chart.axis.Axis', {
                 me.updateTitleSprite();
             } else {
                 baseSprite = me.sprites[0];
-                baseSprite.fx.setConfig(animation);
+                baseSprite.setAnimation(animation);
                 baseSprite.setAttributes(style);
             }
 
@@ -1157,6 +1177,25 @@ Ext.define('Ext.chart.axis.Axis', {
         }
 
         return me.sprites;
+    },
+
+    /**
+     * @private
+     */
+    performLayout: function () {
+        if (this.isConfiguring) {
+            return;
+        }
+        var me = this,
+            sprites = me.getSprites(),
+            surface = me.getSurface(),
+            chart = me.getChart(),
+            sprite = sprites && sprites.length && sprites[0];
+
+        if (chart && surface && sprite) {
+            sprite.callUpdater(null, 'layout'); // recalculate axis ticks
+            chart.scheduleLayout();
+        }
     },
 
     updateTitleSprite: function () {
@@ -1183,7 +1222,7 @@ Ext.define('Ext.chart.axis.Axis', {
                         y: margin + titleMargin / 2,
                         textBaseline: 'top',
                         textAlign: 'center'
-                    }, true, true);
+                    }, true);
                     title.applyTransformations();
                     me.titleOffset = title.getBBox().height + titleMargin;
                     break;
@@ -1193,7 +1232,7 @@ Ext.define('Ext.chart.axis.Axis', {
                         y: thickness + titleMargin / 2,
                         textBaseline: 'top',
                         textAlign: 'center'
-                    }, true, true);
+                    }, true);
                     title.applyTransformations();
                     me.titleOffset = title.getBBox().height + titleMargin;
                     break;
@@ -1206,7 +1245,7 @@ Ext.define('Ext.chart.axis.Axis', {
                         rotationCenterX: margin + titleMargin / 2,
                         rotationCenterY: anchor,
                         rotationRads: -Math.PI / 2
-                    }, true, true);
+                    }, true);
                     title.applyTransformations();
                     me.titleOffset = title.getBBox().width + titleMargin;
                     break;
@@ -1219,7 +1258,7 @@ Ext.define('Ext.chart.axis.Axis', {
                         rotationCenterX: thickness + titleMargin / 2,
                         rotationCenterY: anchor,
                         rotationRads: Math.PI / 2
-                    }, true, true);
+                    }, true);
                     title.applyTransformations();
                     me.titleOffset = title.getBBox().width + titleMargin;
                     break;

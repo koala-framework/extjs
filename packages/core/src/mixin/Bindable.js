@@ -71,6 +71,14 @@ Ext.define('Ext.mixin.Bindable', {
          *
          */
         controller: null,
+        
+        /**
+         * @method getController
+         * Returns the {@link Ext.app.ViewController} instance associated with this 
+         * component via the {@link #controller} config or {@link #setController} method.
+         * @return {Ext.app.ViewController} Returns this component's ViewController or 
+         * null if one was not configured
+         */
 
         /**
          * @cfg {Boolean} defaultListenerScope
@@ -245,7 +253,7 @@ Ext.define('Ext.mixin.Bindable', {
             }
         },
 
-        // @cmd-auto-dependency { aliasPrefix: 'viewmodel.' }
+        // @cmd-auto-dependency { aliasPrefix: 'viewmodel.', defaultType: 'default' }
         /**
          * @cfg {String/Object/Ext.app.ViewModel} viewModel
          * The `ViewModel` is a data provider for this component and its children. The
@@ -527,8 +535,9 @@ Ext.define('Ext.mixin.Bindable', {
                 viewModel = me.lookupViewModel(),
                 twoWayable = me.getTwoWayBindable(),
                 getBindTemplateScope = me._getBindTemplateScope,
-                b, property, descriptor;
+                b, property, descriptor, destroy;
 
+            me.$hasBinds = true;
             if (!currentBindings || typeof currentBindings === 'string') {
                 currentBindings = {};
             }
@@ -559,6 +568,7 @@ Ext.define('Ext.mixin.Bindable', {
                 if (b && typeof b !== 'string') {
                     b.destroy();
                     b = null;
+                    destroy = true;
                 }
 
                 if (descriptor) {
@@ -574,10 +584,19 @@ Ext.define('Ext.mixin.Bindable', {
                     //</debug>
                 }
 
-                currentBindings[property] = b;
-                if (twoWayable && twoWayable[property] && !b.isReadOnly()) {
-                    me.addBindableUpdater(property);
+                if (destroy) {
+                    delete currentBindings[property];
+                } else {
+                    currentBindings[property] = b;
                 }
+
+                if (twoWayable && twoWayable[property]) {
+                    if (destroy) {
+                        me.clearBindableUpdater(property);
+                    } else if (!b.isReadOnly()) {
+                        me.addBindableUpdater(property);
+                    }
+                  }
             }
 
             return currentBindings;
@@ -657,7 +676,11 @@ Ext.define('Ext.mixin.Bindable', {
 
             if (!viewModel.isViewModel) {
                 config = {
-                    parent: me.lookupViewModel(true) // skip this component
+                    parent: me.lookupViewModel(true), // skip this component
+
+                    // Ensure that VM construction activity can reach the view (for
+                    // example events on stores)
+                    view: me
                 };
 
                 config.session = me.getSession();
@@ -682,6 +705,19 @@ Ext.define('Ext.mixin.Bindable', {
             // This method is called as a method on a Binding instance, so the "this" pointer
             // is that of the Binding. The "scope" of the Binding is the component owning it.
             return this.scope.resolveListenerScope();
+        },
+
+        clearBindableUpdater: function (property) {
+            var me = this,
+                configs = me.self.$config.configs,
+                cfg = configs[property],
+                updateName;
+
+            if (cfg && me.hasOwnProperty(updateName = cfg.names.update)) {
+                if (me[updateName].$bindableUpdater) {
+                    delete me[updateName];
+                }
+            }
         },
 
         destroyBindable: function() {
@@ -743,17 +779,20 @@ Ext.define('Ext.mixin.Bindable', {
          * @since 5.0.0
          */
         makeBindableUpdater: function (cfg) {
-            var updateName = cfg.names.update;
+            var updateName = cfg.names.update,
+                fn = function (newValue, oldValue) {
+                    var me = this,
+                        updater = me.self.prototype[updateName];
 
-            return function (newValue, oldValue) {
-                var me = this,
-                    updater = me.self.prototype[updateName];
+                    if (updater) {
+                        updater.call(me, newValue, oldValue);
+                    }
+                    me.publishState(cfg.name, newValue);
+                };
 
-                if (updater) {
-                    updater.call(me, newValue, oldValue);
-                }
-                me.publishState(cfg.name, newValue);
-            };
+                fn.$bindableUpdater = true;
+            
+            return fn;
         },
 
         /**
@@ -787,7 +826,7 @@ Ext.define('Ext.mixin.Bindable', {
             var me = this,
                 bindings, key, binding;
 
-            if (!me.destroying) {
+            if (me.$hasBinds) {
                 bindings = me.getBind();
                 if (bindings && typeof bindings !== 'string') {
                     for (key in bindings) {

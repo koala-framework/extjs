@@ -2,7 +2,11 @@
  */
 Ext.define('Ext.grid.plugin.SummaryRow', {
     extend: 'Ext.grid.Row',
-    alias: 'plugin.gridsummaryrow',
+    alias: ['plugin.summaryrow', 'plugin.gridsummaryrow'],
+
+    requires: [
+        'Ext.grid.cell.Summary'
+    ],
 
     mixins: [
         'Ext.mixin.Hookable'
@@ -12,14 +16,14 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
 
     config: {
         grid: null,
-        cls: Ext.baseCSSPrefix + 'grid-summaryrow',
         emptyText: '',
-        emptyCls: Ext.baseCSSPrefix + 'grid-summaryrow-empty',
-        docked: 'top',
+        docked: 'bottom',
         translatable: {
             translationMethod: 'csstransform'
         }
     },
+
+    classCls: Ext.baseCSSPrefix + 'summaryrow',
 
     init: function(grid) {
         this.setGrid(grid);
@@ -27,7 +31,7 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
 
     updateGrid: function(grid, oldGrid) {
         var me  = this,
-            columns, len, headerContainer, i;
+            columns, len, headerContainer, i, store;
 
         me.storeListeners = Ext.destroy(me.storeListeners);
 
@@ -35,14 +39,16 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
             columns = grid.getColumns();
             len = columns.length;
             headerContainer = grid.getHeaderContainer();
+            store = grid.getStore();
 
-            me.storeListeners = grid.getStore().onAfter({
+            me.storeListeners = store.onAfter({
                 destroyable: true,
                 scope: me,
                 add: 'doUpdateSummary',
                 remove: 'doUpdateSummary',
                 update: 'doUpdateSummary',
-                refresh: 'doUpdateSummary'
+                refresh: 'doUpdateSummary',
+                clear: 'doUpdateSummary'
             });
 
             grid.getHeaderContainer().on({
@@ -56,10 +62,10 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
             });
 
             if (grid.initialized) {
-                grid.container.insertAfter(me, headerContainer);
+                grid.insertAfter(me, headerContainer);
             } else {
                 grid.on('initialize', function() {
-                    grid.container.insertAfter(me, headerContainer);
+                    grid.insertAfter(me, headerContainer);
                 }, me, {single: true});
             }
 
@@ -70,6 +76,11 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
             }
 
             me.bindHook(grid, 'onScrollBinder', 'onGridScroll');
+
+            if(store.isLoaded()){
+                // if the store is already loaded then we update summaries
+                me.doUpdateSummary();
+            }
         }
     },
 
@@ -110,7 +121,7 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
     },
 
     updateRowWidth: function() {
-        this.setWidth(this.getGrid().getTotalColumnWidth());
+        this.setWidth(this.getGrid().calculateTotalColumnWidth());
     },
 
     doUpdateSummary: function() {
@@ -120,8 +131,7 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
             columns = grid.getColumns(),
             ln = columns.length,
             emptyText = me.getEmptyText(),
-            emptyCls = me.getEmptyCls(),
-            i, column, type, renderer, cell, value, field;
+            i, column, type, renderer, formatter, cell, value, field, scope;
 
         for (i = 0; i < ln; i++) {
             column = columns[i];
@@ -131,18 +141,13 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
             if (!column.getIgnore() && type !== null) {
                 field = column.getDataIndex();
                 renderer = column.getSummaryRenderer();
+                formatter = column.getSummaryFormatter();
+                scope = column.getScope();
 
                 if (Ext.isFunction(type)) {
                     value = type.call(store, store.data.items.slice(), field);
                 } else {
                     switch (type) {
-                        default:
-                            value = Ext.callback(type, null, [
-                                    store.data.items.slice(), field, store
-                                ], 0, me);
-
-                            break;
-
                         case 'sum':
                         case 'average':
                         case 'min':
@@ -153,28 +158,34 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
                         case 'count':
                             value = store.getCount();
                             break;
+                        default:
+                            value = Ext.callback(type, null, [
+                                    store.data.items.slice(), field, store
+                                ], 0, me);
+
+                            break;
                     }
                 }
 
-                if (renderer !== null) {
+                if (formatter !== null) {
+                    value = formatter(value);
+                }else if (renderer !== null) {
                     type = typeof renderer;
                     if (type === 'function') {
-                        value = renderer.call(store, value);
+                        value = renderer.call(scope, value, store, field, cell);
                     } else if (type === 'string') {
-                        value = Ext.callback(renderer, null, [value, store], 0, me);
+                        value = Ext.callback(renderer, scope, [value, store, field, cell], 0, column);
                     }
                 }
 
-                cell.element.removeCls(emptyCls);
                 cell.setValue(value);
             } else {
-                cell.element.addCls(emptyCls);
                 cell.setValue(emptyText);
             }
         }
     },
 
-    destroy: function() {
+    doDestroy: function() {
         this.setGrid(null);
         this.callParent();
     },
@@ -190,6 +201,10 @@ Ext.define('Ext.grid.plugin.SummaryRow', {
             var cfg = Ext.apply({}, this.callParent([column]));
             delete cfg.bind;
             return cfg;
+        },
+
+        getColumnCell: function(column) {
+            return column.getSummaryCell();
         }
     }
 });

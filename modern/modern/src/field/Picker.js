@@ -1,14 +1,27 @@
+/**
+ * An abstract class for fields that have a single trigger which opens a "picker" popup 
+ * above the field. It provides a base implementation for toggling the picker's 
+ * visibility when the trigger is tapped.
+ *
+ * You would not normally use this class directly, but instead use it as the parent 
+ * class for a specific picker field implementation.
+ */
 Ext.define('Ext.field.Picker', {
     extend: 'Ext.field.Text',
+    xtype: 'pickerfield',
+
+    requires: [
+        'Ext.field.trigger.Expand'
+    ],
 
     config: {
-
         /**
          * @cfg {Object} component
          * @accessor
          * @hide
          */
         component: {
+            readOnly: true,
             useMask: true
         },
 
@@ -30,12 +43,14 @@ Ext.define('Ext.field.Picker', {
         /**
          * @cfg {Object} defaultPhonePickerConfig
          * The default configuration for the picker component when you are on a phone.
+         * @private
          */
         defaultPhonePickerConfig: null,
 
         /**
          * @cfg {Object} defaultTabletPickerConfig
          * The default configuration for the picker component when you are on a tablet.
+         * @private
          */
         defaultTabletPickerConfig: null,
 
@@ -44,8 +59,16 @@ Ext.define('Ext.field.Picker', {
          * The alignment of text in the picker created by this Select
          * @private
          */
-        pickerSlotAlign: 'center'
+        pickerSlotAlign: 'center',
+
+        triggers: {
+            expand: {
+                type: 'expand'
+            }
+        }
     },
+
+    classCls: Ext.baseCSSPrefix + 'pickerfield',
 
     /**
      * @private
@@ -97,35 +120,19 @@ Ext.define('Ext.field.Picker', {
         return Boolean(usePicker);
     },
 
-    syncEmptyCls: Ext.emptyFn,
-
     /**
      * @private
      */
-    onMaskTap: function() {
+    onMaskTap: function(e) {
+        this.onExpandTap(e);
+    },
+
+    onExpandTap: function() {
         if (!this.getDisabled()) {
             this.onFocus();
         }
 
         return false;
-    },
-
-    /**
-     * @private
-     */
-    updateDisabled: function(disabled) {
-        var component = this.getComponent();
-        if (component) {
-            component.setDisabled(disabled);
-        }
-        Ext.Component.prototype.updateDisabled.apply(this, arguments);
-    },
-
-    /**
-     * @private
-     */
-    setDisabled: function() {
-        Ext.Component.prototype.setDisabled.apply(this, arguments);
     },
 
     onFocus: function(e) {
@@ -137,20 +144,20 @@ Ext.define('Ext.field.Picker', {
         this.fireEvent('focus', this, e);
 
         if (Ext.os.is.Android4) {
-            component.input.dom.focus();
+            component.inputElement.dom.focus();
         }
-        component.input.dom.blur();
+        component.inputElement.dom.blur();
 
         this.isFocused = true;
 
         this.showPicker();
     },
 
-    destroy: function() {
+    doDestroy: function() {
         var me = this;
 
-        me.callParent();
-
         me.tabletPicker = me.phonePicker = Ext.destroy(me.tabletPicker, me.phonePicker);
+        
+        me.callParent();
     }
 });

@@ -69,10 +69,13 @@ Ext.define('Ext.grid.plugin.HeaderResizer', {
             onStart: me.onStart.bind(me),
             onDrag: me.onDrag.bind(me),
             onEnd: me.onEnd.bind(me),
+            onCancel: me.onCancel.bind(me),
             tolerance: 3,
             autoStart: 300,
             el: el
         });
+
+        headerCt.setTouchAction({ panX: false });
     },
 
     // As we mouse over individual headers, change the cursor to indicate
@@ -93,7 +96,8 @@ Ext.define('Ext.grid.plugin.HeaderResizer', {
 
     findActiveHeader: function(e) {
         var me = this,
-            headerEl = e.getTarget('.' + me.colHeaderCls, 3, true),
+            headerCt = me.headerCt,
+            headerEl = e.getTarget('.' + me.colHeaderCls, headerCt.el, true),
             ownerGrid = me.ownerGrid,
             ownerLockable = ownerGrid.ownerLockable,
             overHeader, resizeHeader, headers, header;
@@ -106,7 +110,7 @@ Ext.define('Ext.grid.plugin.HeaderResizer', {
             if (overHeader.isAtEndEdge(e)) {
                 
                 // Cannot resize the only column in a forceFit grid.
-                if (me.headerCt.visibleColumnManager.getColumns().length === 1 && me.headerCt.forceFit) {
+                if (headerCt.visibleColumnManager.getColumns().length === 1 && headerCt.forceFit) {
                     return;
                 }
                 
@@ -115,7 +119,7 @@ Ext.define('Ext.grid.plugin.HeaderResizer', {
             // Else... we might be near the right edge
             else if (overHeader.isAtStartEdge(e)) {
                 // Extract previous visible leaf header
-                headers = me.headerCt.visibleColumnManager.getColumns();
+                headers = headerCt.visibleColumnManager.getColumns();
                 header = overHeader.isGroupHeader ? overHeader.getGridColumns()[0] : overHeader;
                 resizeHeader = headers[Ext.Array.indexOf(headers, header) - 1];
 
@@ -167,6 +171,8 @@ Ext.define('Ext.grid.plugin.HeaderResizer', {
         me.dragHd = me.activeHd || e.pointerType === 'touch' && me.findActiveHeader(e);
 
         if (me.dragHd && !me.headerCt.dragging) {
+            // Prevent drag and longpress gestures being triggered by this mousedown
+            e.claimGesture();
 
             // Calculate how far off the right marker line the mouse pointer is.
             // This will be the xDelta during the following drag operation.
@@ -177,6 +183,13 @@ Ext.define('Ext.grid.plugin.HeaderResizer', {
             me.headerCt.dragging = false;
             return false;
         }
+    },
+
+    // When mouseup and we have not begun dragging.
+    // The setup done in onbeforeStart must be cleared.
+    onCancel: function(e) {
+        this.dragHd = this.activeHd = null;
+        this.headerCt.dragging = false;
     },
 
     // get the region to constrain to, takes into account max and min col widths
@@ -245,6 +258,11 @@ Ext.define('Ext.grid.plugin.HeaderResizer', {
             markerHeight = me.ownerGrid.body.getHeight() + headerCt.getHeight();
             y            = headerCt.getOffsetsTo(markerOwner)[1] - markerOwner.el.getBorderWidth('t');
 
+            // Ensure the markers have the correct cursor in case the cursor is *exactly* over
+            // this single pixel line, not just within the active resize zone
+            lhsMarker.dom.style.cursor = me.eResizeCursor;
+            rhsMarker.dom.style.cursor = me.eResizeCursor;
+
             lhsMarker.setLocalY(y);
             rhsMarker.setLocalY(y);
             lhsMarker.setHeight(markerHeight);
@@ -286,12 +304,15 @@ Ext.define('Ext.grid.plugin.HeaderResizer', {
                 me.setMarkerX(markerOwner.getRhsMarker(), -9999);
             }
             me.doResize();
-            me.dragHd = me.activeHd = null;
-        }
 
-        // If the mouse is still within the handleWidth, then we must be ready to drag again
-        if (e.pointerType !== 'touch') {
-            me.onHeaderCtMouseMove(e);
+            // On mouseup (a real mouseup), we must be ready to start dragging again immediately -
+            // Leave the activeHd active.
+            if (e.pointerType !== 'touch') {
+                me.dragHd = null;
+                me.activeHd.el.dom.style.cursor = me.eResizeCursor;
+            } else {
+                me.dragHd = me.activeHd = null;
+            }
         }
 
         // Do not process the upcoming click after this mouseup. It's not a click gesture

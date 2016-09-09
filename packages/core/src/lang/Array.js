@@ -189,10 +189,17 @@ Ext.Array = (function() {
     },
 
     spliceSim = function (array, index, removeCount) {
-        var pos = fixArrayIndex(array, index),
-            removed = array.slice(index, fixArrayIndex(array, pos+removeCount));
+        var len = arguments.length,
+            pos = fixArrayIndex(array, index),
+            removed;
 
-        if (arguments.length < 4) {
+        if (len < 3) {
+            removeCount = array.length - pos;
+        }
+
+        removed = array.slice(index, fixArrayIndex(array, pos+removeCount));
+
+        if (len < 4) {
             replaceSim(array, pos, removeCount);
         } else {
             replaceSim(array, pos, removeCount, slice.call(arguments, 3));
@@ -311,7 +318,9 @@ Ext.Array = (function() {
          *
          *     sum(1, 2, 3); // returns 6
          *
-         * The iteration can be stopped by returning false in the function callback.
+         * The iteration can be stopped by returning `false` from the callback function.  
+         * Returning `undefined` (i.e `return;`) will only exit the callback function and 
+         * proceed with the next iteration of the loop.
          *
          *     Ext.Array.each(countries, function(name, index, countriesItSelf) {
          *         if (name === 'Singapore') {
@@ -324,12 +333,14 @@ Ext.Array = (function() {
          * @param {Array/NodeList/Object} iterable The value to be iterated. If this
          * argument is not iterable, the callback function is called once.
          * @param {Function} fn The callback function. If it returns `false`, the iteration
-         * stops and this method returns the current `index`.
+         * stops and this method returns the current `index`. Returning `undefined` (i.e 
+         * `return;`) will only exit the callback function and proceed with the next iteration 
+         * in the loop.
          * @param {Object} fn.item The item at the current `index` in the passed `array`
          * @param {Number} fn.index The current `index` within the `array`
          * @param {Array} fn.allItems The `array` itself which was passed as the first argument
-         * @param {Boolean} fn.return Return false to stop iteration.
-         * @param {Object} scope (Optional) The scope (`this` reference) in which the specified function is executed.
+         * @param {Boolean} fn.return Return `false` to stop iteration.
+         * @param {Object} [scope] The scope (`this` reference) in which the specified function is executed.
          * @param {Boolean} [reverse=false] Reverse the iteration order (loop from the end to the beginning).
          * @return {Boolean} See description for the `fn` parameter.
          */
@@ -358,6 +369,7 @@ Ext.Array = (function() {
         },
 
         /**
+         * @method
          * Iterates an array and invoke the given callback function for each item. Note that this will simply
          * delegate to the native `Array.prototype.forEach` method if supported. It doesn't support stopping the
          * iteration by returning `false` in the callback function like {@link Ext.Array#each}. However, performance
@@ -380,6 +392,7 @@ Ext.Array = (function() {
         },
 
         /**
+         * @method
          * Get the index of the provided `item` in the given `array`, a supplement for the
          * missing arrayPrototype.indexOf in Internet Explorer.
          *
@@ -389,9 +402,10 @@ Ext.Array = (function() {
          * @return {Number} The index of item in the array (or -1 if it is not found).
          */
         indexOf: supportsIndexOf ? function(array, item, from) {
-            return arrayPrototype.indexOf.call(array, item, from);
+            // May be called with no array which causes an error.
+            return array ? arrayPrototype.indexOf.call(array, item, from) : -1;
          } : function(array, item, from) {
-            var i, length = array.length;
+            var i, length = array ? array.length : 0;
 
             for (i = (from < 0) ? Math.max(0, length + from) : from || 0; i < length; i++) {
                 if (array[i] === item) {
@@ -403,6 +417,7 @@ Ext.Array = (function() {
         },
 
         /**
+         * @method
          * Checks whether or not the given `array` contains the specified `item`.
          *
          * @param {Array} array The array to check.
@@ -497,6 +512,7 @@ Ext.Array = (function() {
         },
 
         /**
+         * @method
          * Creates a new array with the results of calling a provided function on every element in this array.
          *
          * @param {Array} array
@@ -520,8 +536,8 @@ Ext.Array = (function() {
                 'Ext.Array.map must have a callback function passed as second argument.');
             //</debug>
 
-            var results = [],
-                len = array.length,
+            var len = array.length,
+                results = new Array(len),
                 i;
 
             for (i = 0; i < len; i++) {
@@ -532,6 +548,7 @@ Ext.Array = (function() {
         },
 
         /**
+         * @method
          * Executes the specified function for each array element until the function returns a falsy value.
          * If such an item is found, the function will return `false` immediately.
          * Otherwise, it will return `true`.
@@ -570,6 +587,7 @@ Ext.Array = (function() {
         },
 
         /**
+         * @method
          * Executes the specified function for each array element until the function returns a truthy value.
          * If such an item is found, the function will return `true` immediately. Otherwise, it will return `false`.
          *
@@ -684,6 +702,7 @@ Ext.Array = (function() {
         },
 
         /**
+         * @method
          * Creates a new array with all of the elements of this array for which
          * the provided filtering function returns a truthy value.
          *
@@ -727,7 +746,7 @@ Ext.Array = (function() {
          * @param {Array} array The array to search
          * @param {Function} fn The selection function to execute for each item.
          * @param {Mixed} fn.item The array item.
-         * @param {String} fn.index The index of the array item.
+         * @param {Number} fn.index The index of the array item.
          * @param {Object} scope (optional) The scope (<code>this</code> reference) in which the
          * function is executed. Defaults to the array
          * @return {Object} The first item in the array which returned true from the selection
@@ -1458,14 +1477,14 @@ Ext.Array = (function() {
     };
 
     /**
-     * @method
+     * @method each
      * @member Ext
      * @inheritdoc Ext.Array#each
      */
     Ext.each = ExtArray.each;
 
     /**
-     * @method
+     * @method union
      * @member Ext.Array
      * @inheritdoc Ext.Array#merge
      */
@@ -1474,7 +1493,7 @@ Ext.Array = (function() {
     /**
      * Old alias to {@link Ext.Array#min}
      * @deprecated 4.0.0 Use {@link Ext.Array#min} instead
-     * @method
+     * @method min
      * @member Ext
      * @inheritdoc Ext.Array#min
      */
@@ -1483,7 +1502,7 @@ Ext.Array = (function() {
     /**
      * Old alias to {@link Ext.Array#max}
      * @deprecated 4.0.0 Use {@link Ext.Array#max} instead
-     * @method
+     * @method max
      * @member Ext
      * @inheritdoc Ext.Array#max
      */
@@ -1492,7 +1511,7 @@ Ext.Array = (function() {
     /**
      * Old alias to {@link Ext.Array#sum}
      * @deprecated 4.0.0 Use {@link Ext.Array#sum} instead
-     * @method
+     * @method sum
      * @member Ext
      * @inheritdoc Ext.Array#sum
      */
@@ -1501,7 +1520,7 @@ Ext.Array = (function() {
     /**
      * Old alias to {@link Ext.Array#mean}
      * @deprecated 4.0.0 Use {@link Ext.Array#mean} instead
-     * @method
+     * @method mean
      * @member Ext
      * @inheritdoc Ext.Array#mean
      */
@@ -1510,7 +1529,7 @@ Ext.Array = (function() {
     /**
      * Old alias to {@link Ext.Array#flatten}
      * @deprecated 4.0.0 Use {@link Ext.Array#flatten} instead
-     * @method
+     * @method flatten
      * @member Ext
      * @inheritdoc Ext.Array#flatten
      */
@@ -1519,7 +1538,7 @@ Ext.Array = (function() {
     /**
      * Old alias to {@link Ext.Array#clean}
      * @deprecated 4.0.0 Use {@link Ext.Array#clean} instead
-     * @method
+     * @method clean
      * @member Ext
      * @inheritdoc Ext.Array#clean
      */
@@ -1528,7 +1547,7 @@ Ext.Array = (function() {
     /**
      * Old alias to {@link Ext.Array#unique}
      * @deprecated 4.0.0 Use {@link Ext.Array#unique} instead
-     * @method
+     * @method unique
      * @member Ext
      * @inheritdoc Ext.Array#unique
      */
@@ -1537,14 +1556,14 @@ Ext.Array = (function() {
     /**
      * Old alias to {@link Ext.Array#pluck Ext.Array.pluck}
      * @deprecated 4.0.0 Use {@link Ext.Array#pluck Ext.Array.pluck} instead
-     * @method
+     * @method pluck
      * @member Ext
      * @inheritdoc Ext.Array#pluck
      */
     Ext.pluck = ExtArray.pluck;
 
     /**
-     * @method
+     * @method toArray
      * @member Ext
      * @inheritdoc Ext.Array#toArray
      */

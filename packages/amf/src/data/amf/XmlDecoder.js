@@ -133,7 +133,7 @@ Ext.define('Ext.data.amf.XmlDecoder', {
 
     /**
      * Parses an HTML element returning the appropriate JavaScript value from the AMFX data.
-     * @param {HTMLElement} node the node to parse
+     * @param {HTMLElement} node The node to parse
      * @return {Object} a JavaScript object or value
      */
     readValue: function(node) {
@@ -249,7 +249,7 @@ Ext.define('Ext.data.amf.XmlDecoder', {
 
     /**
      * Parses and returns an AMFX object.
-     * @param {HTMLElement/XMLElement} the `<object>` node to parse
+     * @param {HTMLElement/XMLElement} node the `<object>` node to parse
      * @return {Object} the deserialized object
      */
     readObject: function(node) {
@@ -428,7 +428,6 @@ Ext.define('Ext.data.amf.XmlDecoder', {
      * Converters used in converting specific typed Flex classes to JavaScript usable form.
      * @private
      */
-
     converters: {
         'flex.messaging.io.ArrayCollection': function(decoder,node) {
             return decoder.convertObjectWithSourceField(node);

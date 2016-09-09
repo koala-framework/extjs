@@ -69,6 +69,7 @@ Ext.define('Ext.form.Basic', {
         'Ext.util.MixedCollection',
         'Ext.form.action.Load',
         'Ext.form.action.Submit',
+        'Ext.form.action.StandardSubmit',
         'Ext.window.MessageBox',
         'Ext.data.ErrorCollection',
         'Ext.util.DelayedTask'
@@ -297,7 +298,7 @@ Ext.define('Ext.form.Basic', {
     
     /**
      * @cfg {Object/Array} [metadata]
-     * Optional metadata to pass with the actions when Ext.Direct {@link #api} is used.
+     * Optional metadata to pass with the actions when Ext Direct {@link #api} is used.
      * See {@link Ext.direct.Manager} for more information.
      */
 
@@ -1084,6 +1085,10 @@ Ext.define('Ext.form.Basic', {
                             }
 
                             if (!field.isRadio) {
+                                // skipping checkbox null values since they have no contextual value
+                                if(field.isCheckbox && val===null) {
+                                    continue;
+                                }
                                 if (values.hasOwnProperty(name)) {
                                     bucket = values[name];
 

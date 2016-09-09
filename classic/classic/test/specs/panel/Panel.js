@@ -1,336 +1,33 @@
-describe("Ext.panel.Panel", function () {
+/* global jasmine, Ext, expect, spyOn */
+
+describe("Ext.panel.Panel", function() {
     var panel, ct;
 
-    function makePanel (cfg) {
+    function makePanel(cfg) {
         panel = new Ext.panel.Panel(Ext.apply({
             renderTo: Ext.getBody()
         }, cfg));
     }
 
-    afterEach(function () {
+    afterEach(function() {
         panel = ct = Ext.destroy(panel, ct);
     });
 
-    function keep () {
+    function keep() {
         panel.el.dom.setAttribute('data-sticky', 'true');
         panel = null;
     }
 
-    describe("toolbars", function() {
-        describe("vertical toolbars", function() {
-            describe("lbar", function() {
-                it("should default to vertical: true", function() {
-                    makePanel({
-                        lbar: [{
-                            text: 'Foo'
-                        }]
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-
-                it("should respect a configured vertical: false", function() {
-                    makePanel({
-                        lbar: {
-                            vertical: false,
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: true", function() {
-                    makePanel({
-                        lbar: {
-                            vertical: true,
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
+    describe("destroy", function() {
+        it("should not cause an exception when collapsed & hidden", function() {
+            makePanel({
+                collapsed: true,
+                hidden: true
             });
 
-            describe("rbar", function() {
-                it("should default to vertical: true", function() {
-                    makePanel({
-                        rbar: [{
-                            text: 'Foo'
-                        }]
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-
-                it("should respect a configured vertical: false", function() {
-                    makePanel({
-                        rbar: {
-                            vertical: false,
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: true", function() {
-                    makePanel({
-                        rbar: {
-                            vertical: true,
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-            });
-
-            describe("dock: left", function() {
-                it("should default to vertical: true", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            dock: 'left',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-
-                it("should respect a configured vertical: false", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            vertical: false,
-                            dock: 'left',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: true", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            vertical: true,
-                            dock: 'left',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-            });
-
-            describe("dock: right", function() {
-                it("should default to vertical: true", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            dock: 'right',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-
-                it("should respect a configured vertical: false", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            vertical: false,
-                            dock: 'right',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: true", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            vertical: true,
-                            dock: 'right',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-            });
-        });
-
-        describe("horizontal toolbars", function() {
-            describe("tbar", function() {
-                it("should default to vertical: false", function() {
-                    makePanel({
-                        tbar: [{
-                            text: 'Foo'
-                        }]
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: false", function() {
-                    makePanel({
-                        tbar: {
-                            vertical: false,
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: true", function() {
-                    makePanel({
-                        tbar: {
-                            vertical: true,
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-            });
-
-            describe("bbar", function() {
-                it("should default to vertical: false", function() {
-                    makePanel({
-                        bbar: [{
-                            text: 'Foo'
-                        }]
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: false", function() {
-                    makePanel({
-                        bbar: {
-                            vertical: false,
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: true", function() {
-                    makePanel({
-                        bbar: {
-                            vertical: true,
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-            });
-
-            describe("dock: top", function() {
-                it("should default to vertical: false", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            dock: 'top',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: false", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            vertical: false,
-                            dock: 'top',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: true", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            vertical: true,
-                            dock: 'top',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-            });
-
-            describe("dock: bottom", function() {
-                it("should default to vertical: false", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            dock: 'bottom',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: false", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            vertical: false,
-                            dock: 'bottom',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(false);
-                });
-
-                it("should respect a configured vertical: true", function() {
-                    makePanel({
-                        dockedItems: {
-                            xtype: 'toolbar',
-                            vertical: true,
-                            dock: 'bottom',
-                            items: [{
-                                text: 'Foo'
-                            }]
-                        }
-                    });
-                    expect(panel.down('toolbar').vertical).toBe(true);
-                });
-            });
+            expect(function() {
+                panel.destroy();
+            }).not.toThrow();
         });
     });
 
@@ -369,6 +66,48 @@ describe("Ext.panel.Panel", function () {
                     });
                     expect(panel.down('toolbar').vertical).toBe(true);
                 });
+
+                it("should take a component instance", function() {
+                    var bar = new Ext.toolbar.Toolbar();
+                    makePanel({
+                        lbar: bar
+                    });
+                    expect(panel.down('toolbar')).toBe(bar);
+                });
+
+                it("should respect a specified xtype", function() {
+                    makePanel({
+                        lbar: {
+                            xtype: 'container',
+                            itemId: 'ct'
+                        }
+                    });
+                    expect(panel.down('#ct').getXType()).toBe('container');
+                });
+
+                it("should not mutate the config on an instance", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    makePanel({
+                        lbar: o
+                    });
+                    expect(o.xtype).toBeUndefined();
+                });
+
+                it("should not mutate the config on a class declaration", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    var Cls = Ext.define(null, {
+                        extend: 'Ext.panel.Panel',
+                        lbar: o
+                    });
+                    panel = new Cls({
+                        renderTo: document.body
+                    });
+                    expect(o.xtype).toBeUndefined();
+                });
             });
 
             describe("rbar", function() {
@@ -403,6 +142,48 @@ describe("Ext.panel.Panel", function () {
                         }
                     });
                     expect(panel.down('toolbar').vertical).toBe(true);
+                });
+
+                it("should take a component instance", function() {
+                    var bar = new Ext.toolbar.Toolbar();
+                    makePanel({
+                        rbar: bar
+                    });
+                    expect(panel.down('toolbar')).toBe(bar);
+                });
+
+                it("should respect a specified xtype", function() {
+                    makePanel({
+                        rbar: {
+                            xtype: 'container',
+                            itemId: 'ct'
+                        }
+                    });
+                    expect(panel.down('#ct').getXType()).toBe('container');
+                });
+
+                it("should not mutate the config on an instance", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    makePanel({
+                        rbar: o
+                    });
+                    expect(o.xtype).toBeUndefined();
+                });
+
+                it("should not mutate the config on a class declaration", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    var Cls = Ext.define(null, {
+                        extend: 'Ext.panel.Panel',
+                        rbar: o
+                    });
+                    panel = new Cls({
+                        renderTo: document.body
+                    });
+                    expect(o.xtype).toBeUndefined();
                 });
             });
 
@@ -527,6 +308,48 @@ describe("Ext.panel.Panel", function () {
                     });
                     expect(panel.down('toolbar').vertical).toBe(true);
                 });
+
+                it("should take a component instance", function() {
+                    var bar = new Ext.toolbar.Toolbar();
+                    makePanel({
+                        tbar: bar
+                    });
+                    expect(panel.down('toolbar')).toBe(bar);
+                });
+
+                it("should respect a specified xtype", function() {
+                    makePanel({
+                        tbar: {
+                            xtype: 'container',
+                            itemId: 'ct'
+                        }
+                    });
+                    expect(panel.down('#ct').getXType()).toBe('container');
+                });
+
+                it("should not mutate the config on an instance", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    makePanel({
+                        tbar: o
+                    });
+                    expect(o.xtype).toBeUndefined();
+                });
+
+                it("should not mutate the config on a class declaration", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    var Cls = Ext.define(null, {
+                        extend: 'Ext.panel.Panel',
+                        tbar: o
+                    });
+                    panel = new Cls({
+                        renderTo: document.body
+                    });
+                    expect(o.xtype).toBeUndefined();
+                });
             });
 
             describe("bbar", function() {
@@ -561,6 +384,48 @@ describe("Ext.panel.Panel", function () {
                         }
                     });
                     expect(panel.down('toolbar').vertical).toBe(true);
+                });
+
+                it("should take a component instance", function() {
+                    var bar = new Ext.toolbar.Toolbar();
+                    makePanel({
+                        bbar: bar
+                    });
+                    expect(panel.down('toolbar')).toBe(bar);
+                });
+
+                it("should respect a specified xtype", function() {
+                    makePanel({
+                        bbar: {
+                            xtype: 'container',
+                            itemId: 'ct'
+                        }
+                    });
+                    expect(panel.down('#ct').getXType()).toBe('container');
+                });
+
+                it("should not mutate the config on an instance", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    makePanel({
+                        bbar: o
+                    });
+                    expect(o.xtype).toBeUndefined();
+                });
+
+                it("should not mutate the config on a class declaration", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    var Cls = Ext.define(null, {
+                        extend: 'Ext.panel.Panel',
+                        bbar: o
+                    });
+                    panel = new Cls({
+                        renderTo: document.body
+                    });
+                    expect(o.xtype).toBeUndefined();
                 });
             });
 
@@ -647,6 +512,76 @@ describe("Ext.panel.Panel", function () {
                         }
                     });
                     expect(panel.down('toolbar').vertical).toBe(true);
+                });
+            });
+            
+            describe("fbar", function() {
+                it("should use footer ui", function() {
+                    makePanel({
+                        fbar: [{ text: 'foo' }]
+                    });
+                    
+                    expect(panel.down('toolbar').ui).toBe('footer');
+                });
+
+                it("should take a component instance", function() {
+                    var bar = new Ext.toolbar.Toolbar();
+                    makePanel({
+                        fbar: bar
+                    });
+                    expect(panel.down('toolbar')).toBe(bar);
+                });
+                
+                it("should respect a specified xtype", function() {
+                    makePanel({
+                        fbar: {
+                            xtype: 'container',
+                            itemId: 'ct'
+                        }
+                    });
+                    expect(panel.down('#ct').getXType()).toBe('container');
+                });
+
+                it("should not mutate the config on an instance", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    makePanel({
+                        fbar: o
+                    });
+                    expect(o.xtype).toBeUndefined();
+                });
+
+                it("should not mutate the config on a class declaration", function() {
+                    var o = {
+                        itemId: 'foo'
+                    };
+                    var Cls = Ext.define(null, {
+                        extend: 'Ext.panel.Panel',
+                        fbar: o
+                    });
+                    panel = new Cls({
+                        renderTo: document.body
+                    });
+                    expect(o.xtype).toBeUndefined();
+                });
+                
+                it("should not disable focusable container behavior", function() {
+                    makePanel({
+                        fbar: [{ text: 'blerg' }]
+                    });
+                    
+                    expect(panel.down('toolbar').enableFocusableContainer).toBe(true);
+                });
+            });
+            
+            describe("buttons", function() {
+                it("should disable focusable container behavior", function() {
+                    makePanel({
+                        buttons: [{ text: 'throbbe' }]
+                    });
+                    
+                    expect(panel.down('toolbar').enableFocusableContainer).toBe(false);
                 });
             });
         });
@@ -678,6 +613,81 @@ describe("Ext.panel.Panel", function () {
     });
     
     describe("collapsible", function(){
+
+        describe("placeholderCollapse", function() {
+            describe("with layouts suspended", function() {
+                function makeSuite(globalSuspend) {
+                    function makeAnimSuite(anim) {
+                        var ct, p;
+
+                        function suspend() {
+                            if (globalSuspend) {
+                                Ext.suspendLayouts();
+                            } else {
+                                ct.suspendLayouts();
+                            }
+                        }
+
+                        function resume() {
+                            if (globalSuspend) {
+                                Ext.resumeLayouts(true);
+                            } else {
+                                ct.resumeLayouts(true);
+                            }
+                        }
+
+                        describe("with animCollapse: " + anim, function() {
+                            beforeEach(function() {
+                                ct = new Ext.container.Container({
+                                    renderTo: Ext.getBody(),
+                                    width: 400,
+                                    height: 400,
+                                    layout: 'border',
+                                    items: [{
+                                        title: 'West',
+                                        region: 'west',
+                                        collapsible: true,
+                                        animCollapse: anim,
+                                        width: 200
+                                    }, {
+                                        region: 'center'
+                                    }]
+                                });
+                                p = ct.items.first();
+                            });
+
+                            afterEach(function() {
+                                p = ct = Ext.destroy(ct);
+                            });
+
+                            it("should not cause an exception when collapsing", function() {
+                                expect(function() {
+                                    suspend();
+                                    p.collapse();
+                                    resume();
+                                }).not.toThrow();
+                            });
+
+                            it("should collapse the panel on resume", function() {
+                                expect(p.placeholder).toBeFalsy();
+                                suspend();
+                                p.collapse();
+                                resume();
+                                expect(p.placeholder.rendered).toBe(true);
+                            });
+                        });
+                    }
+
+                    describe(globalSuspend ? "global layout suspend" : "component layout suspend", function() {
+                        makeAnimSuite(false);
+                        makeAnimSuite(true);
+                    });
+                }
+
+                makeSuite(false);
+                makeSuite(true);
+            });
+        });
 
         describe("horizontal collapsing", function() {
             it("should add the correct vertical classes", function() {
@@ -885,17 +895,14 @@ describe("Ext.panel.Panel", function () {
         });
 
         describe("collapseTool", function(){
-            var getTool;
-
-            beforeEach(function(){
-                getTool = function(){
-                    return panel.down('tool');
-                };
-            });
-
-            afterEach(function(){
-                getTool = null;
-            });
+            function getTool() {
+                return panel.down('tool');
+            }
+            // Gets the *Panel's* tool, NOT the placeholder's tool.
+            // Panel's getRefItems returns the placeholder.
+            function getPlaceholderCollapsedTool() {
+                return panel.collapsed ? panel.getRefItems()[1].down('tool') : getTool();
+            }
 
             it("should not create a collapse tool if collapsible: false", function(){
                 makePanel({
@@ -909,67 +916,63 @@ describe("Ext.panel.Panel", function () {
 
             // collapsed, collapseDirection, expectedTool
             Ext.Array.forEach([
-                        { collapsed: false, collapseDirection: 'top',    expect: 'collapse-top' },
-                        { collapsed: false, collapseDirection: 'right',  expect: 'collapse-right' },
-                        { collapsed: false, collapseDirection: 'bottom', expect: 'collapse-bottom' },
-                        { collapsed: false, collapseDirection: 'left',   expect: 'collapse-left' },
-                        { collapsed: true,  collapseDirection: 'top',    expect: 'expand-bottom' },
-                        { collapsed: true,  collapseDirection: 'right',  expect: 'expand-left' },
-                        { collapsed: true,  collapseDirection: 'bottom', expect: 'expand-top' },
-                        { collapsed: true,  collapseDirection: 'left',   expect: 'expand-right' }
-                    ],
-                function(item){
-                    var answer = item.expect;
-                    delete item.expect;
+                { collapsed: false, collapseDirection: 'top',    expect: 'collapse-top' },
+                { collapsed: false, collapseDirection: 'right',  expect: 'collapse-right' },
+                { collapsed: false, collapseDirection: 'bottom', expect: 'collapse-bottom' },
+                { collapsed: false, collapseDirection: 'left',   expect: 'collapse-left' },
+                { collapsed: true,  collapseDirection: 'top',    expect: 'expand-bottom' },
+                { collapsed: true,  collapseDirection: 'right',  expect: 'expand-left' },
+                { collapsed: true,  collapseDirection: 'bottom', expect: 'expand-top' },
+                { collapsed: true,  collapseDirection: 'left',   expect: 'expand-right' }
+            ],
+            function(item){
+                var answer = item.expect;
+                delete item.expect;
 
-                    it("should render the correct tool with default collapseMode "+
-                            Ext.encode(item),
-                        function(){
-                            makePanel(Ext.apply({
-                                width: 50,
-                                height: 50,
-                                title: 'x',
-                                collapsible: true
-                            }, item));
-                            expect(getTool().type).toBe(answer);
-                        });
+                it("should render the correct tool with default collapseMode " + Ext.encode(item), function(){
+                    makePanel(Ext.apply({
+                        width: 50,
+                        height: 50,
+                        title: 'x',
+                        collapsible: true
+                    }, item));
+                    expect(getTool().type).toBe(answer);
                 });
+            });
 
             // When using placeHolder, it should never modify the tool of the original panel
             Ext.Array.forEach([
-                    { collapsed: false, collapseDirection: 'top',    expect: 'collapse-top' },
-                    { collapsed: false, collapseDirection: 'right',  expect: 'collapse-right' },
-                    { collapsed: false, collapseDirection: 'bottom', expect: 'collapse-bottom' },
-                    { collapsed: false, collapseDirection: 'left',   expect: 'collapse-left' },
-                    { collapsed: true,  collapseDirection: 'top',    expect: 'collapse-top' },
-                    { collapsed: true,  collapseDirection: 'right',  expect: 'collapse-right' },
-                    { collapsed: true,  collapseDirection: 'bottom', expect: 'collapse-bottom' },
-                    { collapsed: true,  collapseDirection: 'left',   expect: 'collapse-left' }
-                ],
-                function(item){
-                    var answer = item.expect;
-                    delete item.expect;
+                { collapsed: false, collapseDirection: 'top',    expect: 'collapse-top' },
+                { collapsed: false, collapseDirection: 'right',  expect: 'collapse-right' },
+                { collapsed: false, collapseDirection: 'bottom', expect: 'collapse-bottom' },
+                { collapsed: false, collapseDirection: 'left',   expect: 'collapse-left' },
+                { collapsed: true,  collapseDirection: 'top',    expect: 'collapse-top' },
+                { collapsed: true,  collapseDirection: 'right',  expect: 'collapse-right' },
+                { collapsed: true,  collapseDirection: 'bottom', expect: 'collapse-bottom' },
+                { collapsed: true,  collapseDirection: 'left',   expect: 'collapse-left' }
+            ],
+            function(item){
+                var answer = item.expect;
+                delete item.expect;
 
-                    it("should render the correct tool with the collapseMode placeHolder "+
-                            Ext.encode(item),
-                        function(){
-                            // collapsed, collapseDirection, expectedTool
-                            var ct = new Ext.container.Container({
-                                renderTo: Ext.getBody()
-                            });
-                            makePanel(Ext.apply({
-                                renderTo: null,
-                                width: 50,
-                                height: 50,
-                                title: 'x',
-                                collapsible: true,
-                                collapseMode: 'placeholder'
-                            }, item));
-                            ct.add(panel);
-                            expect(getTool().type).toBe(answer);
-                            Ext.destroy(ct);
-                        });
+                it("should render the correct tool with the collapseMode placeHolder " + Ext.encode(item), function(){
+                    // collapsed, collapseDirection, expectedTool
+                    var ct = new Ext.container.Container({
+                        renderTo: Ext.getBody()
+                    });
+                    makePanel(Ext.apply({
+                        renderTo: null,
+                        width: 50,
+                        height: 50,
+                        title: 'x',
+                        collapsible: true,
+                        collapseMode: 'placeholder'
+                    }, item));
+                    ct.add(panel);
+                    expect(getPlaceholderCollapsedTool().type).toBe(answer);
+                    Ext.destroy(ct);
                 });
+            });
         });
         
         describe("animation", function() {
@@ -991,11 +994,73 @@ describe("Ext.panel.Panel", function () {
                 });
                 
                 waitsFor(function() {
-                    return panel.collapsed === 'top'
+                    return panel.collapsed === 'top';
                 }, 'Never collapsed');
                 
                 runs(function() {
                     expect(panel.collapsed).toBe('top');
+                });
+            });
+            
+            // https://sencha.jira.com/browse/EXTJS-19791
+            it("should save numeric animCollapse duration to use with Accordion layouts", function() {
+                makePanel({
+                    title: 'Hello',
+                    animCollapse: 50,
+                    collapsible: true,
+                    width: 200,
+                    x: 100,
+                    y: 100,
+                    html: '<p>World!</p>'
+                });
+                
+                panel.animCollapse = false;
+                
+                var props = panel.getAnimationProps();
+                
+                expect(props.duration).toBe(50);
+            });
+            
+            // https://sencha.jira.com/browse/EXTJS-6924
+            it("should expand if created collapsed", function() {
+                var inner, spy;
+                
+                spy = jasmine.createSpy('expand');
+                
+                // Key here is that we collapse inner panel that participates
+                // in the parent container layout.
+                makePanel({
+                    title: 'Outer',
+                    width: 300,
+                    height: 200,
+                    layout: 'fit',
+                    bodyStyle: {
+                        'background-color': 'green'
+                    },
+                    
+                    items: [{
+                        xtype: 'panel',
+                        itemId: 'inner',
+                        title: 'Inner',
+                        collapsible: true,
+                        collapsed: true,
+                        html: 'Lorem ipsum dolor sit amet',
+                        bodyStyle: {
+                            'background-color': 'red'
+                        },
+                        listeners: {
+                            expand: spy
+                        }
+                    }]
+                });
+                
+                inner = panel.down('#inner');
+                inner.expand();
+                
+                waitForSpy(spy);
+                
+                runs(function() {
+                    expect(inner.collapsed).toBe(false);
                 });
             });
         });
@@ -1223,6 +1288,15 @@ describe("Ext.panel.Panel", function () {
                     panel.render(Ext.getBody());
                     expect(panel.header.getTitle().textEl.dom).hasHTML('Bar');
                 });
+
+                it("should be able to set a numeric title", function(){
+                    makePanel({
+                        renderTo: null
+                    });    
+                    panel.setTitle(123);
+                    panel.render(Ext.getBody());
+                    expect(panel.header.getTitle().textEl.dom).hasHTML('123');
+                });
                 
                 it("should not modify the tools when setting the title", function(){
                     makePanel({
@@ -1272,6 +1346,16 @@ describe("Ext.panel.Panel", function () {
                     panel.setTitle('Bar');
                     panel.render(Ext.getBody());
                     expect(panel.header.getTitle().textEl.dom).hasHTML('Bar');
+                });
+
+                it("should update with a numeric title when rendered", function(){
+                    makePanel({
+                        renderTo: null,
+                        title: 'Foo'
+                    });    
+                    panel.setTitle(123);
+                    panel.render(Ext.getBody());
+                    expect(panel.header.getTitle().textEl.dom).hasHTML('123');
                 });
                 
                 it("should not modify the tools when setting the title", function(){
@@ -1324,6 +1408,12 @@ describe("Ext.panel.Panel", function () {
                     panel.setTitle('Bar');
                     expect(panel.header.getTitle().textEl.dom).hasHTML('Bar');
                 });
+
+                it("should create a numeric title when rendered", function(){
+                    makePanel();
+                    panel.setTitle(123);
+                    expect(panel.header.getTitle().textEl.dom).hasHTML('123');
+                });
             });
 
             describe("with a title", function() {
@@ -1333,6 +1423,14 @@ describe("Ext.panel.Panel", function () {
                     });
                     panel.setTitle('Bar');
                     expect(panel.header.getTitle().textEl.dom).hasHTML('Bar');
+                });
+
+                it("should update a numeric title when rendered", function(){
+                    makePanel({
+                        title: 'Foo'
+                    });
+                    panel.setTitle(123);
+                    expect(panel.header.getTitle().textEl.dom).hasHTML('123');
                 });
             });
 
@@ -1652,7 +1750,7 @@ describe("Ext.panel.Panel", function () {
                 spy = spyOn(panel, 'initDraggable');
                 panel.render(Ext.getBody());
 
-                expect(spy).wasCalled();
+                expect(spy).toHaveBeenCalled();
             });
 
             it('should have a DragSource instance if draggable', function () {
@@ -1673,7 +1771,7 @@ describe("Ext.panel.Panel", function () {
                 spy = spyOn(panel.dd, 'endDrag');
                 panel.hide();
 
-                expect(spy).wasCalled();
+                expect(spy).toHaveBeenCalled();
             });
 
             it('should not create a Component Dragger instance  with header: false', function() {
@@ -1694,7 +1792,7 @@ describe("Ext.panel.Panel", function () {
                 spy = spyOn(panel, 'initDraggable');
                 panel.render(Ext.getBody());
 
-                expect(spy).wasNotCalled();
+                expect(spy).not.toHaveBeenCalled();
             });
 
             it('should not have a DragSource instance if not draggable', function () {
@@ -1790,6 +1888,103 @@ describe("Ext.panel.Panel", function () {
         });
     });
 
+    describe('titleCollapse', function () {
+        var viewport, westRegion, placeholder, panel, reExpander;
+
+        function createViewport(cfg, titleCollapse) {
+            viewport = new Ext.container.Viewport(Ext.apply({
+                layout: 'border',
+                items: [{
+                    region: 'west',
+                    collapsed: false,
+                    collapsible: true,
+                    animCollapse: false,
+                    width: 150,
+                    split: true,
+                    title: 'West Region',
+                    titleCollapse: titleCollapse
+                }, {
+                    region: 'center',
+                    items: []
+                }],
+                renderTo: Ext.getBody()
+            }, cfg || {}));
+
+            westRegion = viewport.down('panel[region="west"]');
+        }
+
+        function makePanel(cfg) {
+            panel = Ext.widget(Ext.apply({
+                xtype: 'panel',
+                renderTo: document.body,
+                height: 100,
+                collapsible: true,
+                animCollapse: false,
+                width: 300,
+                title: 'My Panel', 
+                collapseDirection: 'right'
+            }, cfg));
+        }
+
+        afterEach(function () {
+            Ext.destroy(viewport, westRegion, placeholder, panel, reExpander);
+        });
+
+        describe('placeholder', function () {
+            it('should expand the region if titleCollapse=true and hide the placeholder', function () {
+                createViewport({}, true);
+                westRegion.collapse();
+                placeholder = westRegion.placeholder;
+
+                jasmine.fireMouseEvent(placeholder.getEl(), 'click');
+                
+                expect(placeholder.hidden).toBe(true);
+                expect(westRegion.collapsed).toBe(false);             
+            });
+
+            it('should expand the region if titleCollapse=false but keep the placeholder visible', function () {
+                createViewport({}, false);
+                westRegion.collapse();
+                placeholder = westRegion.placeholder;
+                // even though titleCollapse is false, a click will still expand the region temporarily
+                jasmine.fireMouseEvent(placeholder.getEl(), 'click');
+
+                expect(placeholder.hidden).toBe(false);
+                expect(westRegion.collapsed).toBe(false);
+            });
+        });
+
+        describe('rexpander', function() {
+            it('should expand the panel if titleCollapse=true', function () {
+                makePanel({
+                    titleCollapse:true
+                });
+
+                panel.collapse();
+                reExpander = panel.reExpander;
+
+                jasmine.fireMouseEvent(reExpander.getEl(), 'click');
+
+                expect(reExpander.hidden).toBe(true);
+                expect(panel.collapsed).toBe(false);
+            });
+
+            it('should not expand the panel if titleCollapse=false', function () {
+                makePanel({
+                    titleCollapse:false
+                });
+
+                panel.collapse();
+                reExpander = panel.reExpander;
+                
+                jasmine.fireMouseEvent(reExpander.getEl(), 'click');
+
+                expect(reExpander.hidden).toBe(false);
+                expect(panel.collapsed).toBe('right');
+            });
+        });
+    });
+
     describe('placeholder', function () {
         var wasCalled = false,
             viewport, westRegion, centerRegion, placeholder;
@@ -1860,6 +2055,40 @@ describe("Ext.panel.Panel", function () {
                     expect(westRegion.isVisible()).toBe(false);
                     expect(westRegion.splitter.isVisible()).toBe(false);
                     expect(centerRegion.getWidth()).toBe(viewport.getWidth());
+                });
+            });
+            
+            // https://sencha.jira.com/browse/EXTJS-21507
+            it("should not set display:none on the placeholder when removed while collapsing", function() {
+                createViewport({
+                    layout: 'border',
+                    items: [{
+                        region: 'west',
+                        title: 'west',
+                        collapsible: true,
+                        width: 150
+                    }, {
+                        region: 'center',
+                        title: 'center',
+                        items: []
+                    }],
+                    renderTo: Ext.getBody()
+                }, false);
+
+                var collapseSpy = spyOn(westRegion, 'doPlaceholderCollapse').andCallThrough();
+                
+                // Start collapsing but don't let the animation kick off yet
+                westRegion.collapse();
+                
+                // Remove but don't destroy
+                viewport.remove(westRegion, false);
+                
+                // Async from now on
+                waitForSpy(collapseSpy);
+                
+                runs(function() {
+                    // It's invisible because it's detached - should NOT be display:none
+                    expect(westRegion.placeholder.el.dom.style.display).not.toBe('none');
                 });
             });
         });
@@ -2541,22 +2770,18 @@ describe("Ext.panel.Panel", function () {
         });
     });
     
-    describe("defaultButton", function() {
+    describe("defaultButton referenceHolder == true", function() {
         var pressKey = jasmine.pressKey,
-            okSpy, cancelSpy, keydownSpy, fooInput, barInput, cancelButton, event;
+            okSpy, cancelSpy, keydownSpy, fooInput, barInput, okButton, cancelButton,
+            event;
         
-        beforeEach(function() {
-            okSpy = jasmine.createSpy('OK button handler');
-            cancelSpy = jasmine.createSpy('Cancel button handler');
-            keydownSpy = jasmine.createSpy('Panel keydown');
-            
-            makePanel({
+        function setupPanel(config) {
+            config = Ext.apply({
                 renderTo: undefined,
                 x: 10,
                 y: 10,
                 width: 400,
                 height: 400,
-                referenceHolder: true,
                 items: [{
                     xtype: 'textfield',
                     fieldLabel: 'foo',
@@ -2569,18 +2794,19 @@ describe("Ext.panel.Panel", function () {
                 defaultButton: 'okButton',
                 buttons: [{
                     reference: 'okButton',
-                    text: 'OK',
-                    handler: okSpy
+                    text: 'OK'
                 }, {
                     reference: 'cancelButton',
-                    text: 'Cancel',
-                    handler: cancelSpy
+                    text: 'Cancel'
                 }]
-            });
+            }, config);
             
-            fooInput = panel.lookupReference('fooInput');
-            barInput = panel.lookupReference('barInput');
-            cancelButton = panel.lookupReference('cancelButton');
+            makePanel(config);
+
+            fooInput = panel.down('[reference=fooInput]');
+            barInput = panel.down('[reference=barInput]');
+            okButton = panel.down('[reference=okButton]');
+            cancelButton = panel.down('[reference=cancelButton]');
             
             panel.on('boxready', function() {
                 this.el.on('keydown', keydownSpy);
@@ -2593,44 +2819,382 @@ describe("Ext.panel.Panel", function () {
             keydownSpy.andCallFake(function(e) {
                 event = e;
             });
+        }
+        
+        beforeEach(function() {
+            okSpy = jasmine.createSpy('OK button handler');
+            cancelSpy = jasmine.createSpy('Cancel button handler');
+            keydownSpy = jasmine.createSpy('Panel keydown');
         });
         
         afterEach(function() {
-            panel.el.un('keydown', keydownSpy);
+            if (panel && panel.el) {
+                panel.el.un('keydown', keydownSpy);
+            }
+            
             okSpy = cancelSpy = keydownSpy = fooInput = barInput = cancelButton = null;
             event = null;
         });
         
-        describe("no defaultButton", function() {
+        describe("w/ referenceHolder == true", function() {
             beforeEach(function() {
-                panel.defaultButton = undefined;
-                panel.render(Ext.getBody());
+                setupPanel({
+                    referenceHolder: true
+                });
+                
+                okButton.on('click', okSpy);
+                cancelButton.on('click', cancelSpy);
             });
             
-            it("should not fire OK handler", function() {
-                pressKey(fooInput, 'enter');
+            describe("no defaultButton", function() {
+                beforeEach(function() {
+                    panel.defaultButton = undefined;
+                    panel.render(Ext.getBody());
+                });
                 
-                waitForSpy(keydownSpy);
+                it("should not fire OK handler", function() {
+                    pressKey(fooInput, 'enter');
+                    
+                    waitForSpy(keydownSpy);
+                    
+                    runs(function() {
+                        expect(okSpy).not.toHaveBeenCalled();
+                    });
+                });
                 
-                runs(function() {
-                    expect(okSpy).not.toHaveBeenCalled();
+                it("should not have stopped the keydown event", function() {
+                    pressKey(barInput, 'enter');
+                    
+                    waitForSpy(keydownSpy);
+                    
+                    runs(function() {
+                        expect(event.stopped).toBeFalsy();
+                    });
                 });
             });
             
-            it("should not have stopped the keydown event", function() {
-                pressKey(barInput, 'enter');
+            describe("with defaultButton", function() {
+                beforeEach(function() {
+                    panel.render(Ext.getBody());
+                });
                 
-                waitForSpy(keydownSpy);
+                it("should fire OK handler in fooInput", function() {
+                    pressKey(fooInput, 'enter');
+                    
+                    waitForSpy(okSpy);
+                    
+                    runs(function() {
+                        expect(okSpy).toHaveBeenCalled();
+                    });
+                });
                 
-                runs(function() {
-                    expect(event.isStopped).toBeFalsy();
+                it("should fire OK handler in barInput", function() {
+                    pressKey(barInput, 'enter');
+                    
+                    waitForSpy(okSpy);
+                    
+                    runs(function() {
+                        expect(okSpy).toHaveBeenCalled();
+                    });
+                });
+                
+                it("should not fire OK handler on Cancel button", function() {
+                    pressKey(cancelButton, 'enter');
+                    
+                    waitForSpy(cancelSpy);
+                    
+                    runs(function() {
+                        expect(okSpy).not.toHaveBeenCalled();
+                    });
+                });
+                
+                it("should have stopped the keydown event", function() {
+                    pressKey(fooInput, 'enter');
+                    
+                    waitForSpy(okSpy);
+                    
+                    runs(function() {
+                        expect(event.stopped).toBeTruthy();
+                    });
+                });
+                
+                it("should not have reached main el keydown listener", function() {
+                    pressKey(barInput, 'enter');
+                    
+                    waitForSpy(okSpy);
+                    
+                    runs(function() {
+                        expect(keydownSpy).not.toHaveBeenCalled();
+                    });
+                });
+            });
+            
+            describe("with defaultButton and defaultButtonTarget", function() {
+                beforeEach(function() {
+                    panel.defaultButtonTarget = 'el';
+                    panel.render(Ext.getBody());
+                });
+                
+                it("should fire OK handler in fooInput", function() {
+                    pressKey(fooInput, 'enter');
+                    
+                    waitForSpy(okSpy);
+                    
+                    runs(function() {
+                        expect(okSpy).toHaveBeenCalled();
+                    });
+                });
+                
+                it("should fire OK handler in barInput", function() {
+                    pressKey(barInput, 'enter');
+                    
+                    waitForSpy(okSpy);
+                    
+                    runs(function() {
+                        expect(okSpy).toHaveBeenCalled();
+                    });
+                });
+                
+                it("should NOT fire OK handler on Cancel button", function() {
+                    pressKey(cancelButton, 'enter');
+                    
+                    waitForSpy(cancelSpy);
+                    
+                    runs(function() {
+                        expect(okSpy).not.toHaveBeenCalled();
+                    });
+                });
+                
+                it("should have stopped the keydown event", function() {
+                    pressKey(fooInput, 'enter');
+                    
+                    waitForSpy(okSpy);
+                    
+                    runs(function() {
+                        expect(event.stopped).toBeTruthy();
+                    });
+                });
+            });
+            
+            describe("nested panel", function() {
+                var nestedPanel, nestedInput, nestedOk, nestedCancel,
+                    nestedOkSpy, nestedCancelSpy;
+                
+                beforeEach(function() {
+                    nestedOkSpy = jasmine.createSpy('Nested OK handler');
+                    nestedCancelSpy = jasmine.createSpy('Nested Cancel handler');
+                    
+                    nestedPanel = panel.add({
+                        xtype: 'panel',
+                        title: 'nested',
+                        items: [{
+                            xtype: 'textfield',
+                            fieldLabel: 'Nested',
+                            reference: 'nestedInput'
+                        }],
+                        buttons: [{
+                            text: 'Nested OK',
+                            reference: 'nestedOk',
+                            handler: nestedOkSpy
+                        }, {
+                            text: 'Nested Cancel',
+                            reference: 'nestedCancel',
+                            handler: nestedCancelSpy
+                        }]
+                    });
+                    
+                    nestedInput = panel.lookupReference('nestedInput');
+                    nestedOk = panel.lookupReference('nestedOk');
+                    nestedCancel = panel.lookupReference('nestedCancel');
+                    
+                    nestedOkSpy.andCallFake(function(btn, e) {
+                        event = e;
+                    });
+                    
+                    nestedCancelSpy.andCallFake(function(btn, e) {
+                        event = e;
+                        
+                        e.stopEvent();
+                        
+                        return false;
+                    });
+                });
+                
+                afterEach(function() {
+                    nestedOkSpy = nestedCancelSpy = null;
+                    nestedInput = nestedOk = nestedCancel = null;
+                });
+                
+                describe("no defaultButton config", function() {
+                    beforeEach(function() {
+                        panel.render(Ext.getBody());
+                    });
+                    
+                    it("should fire outer OK handler on nested input", function() {
+                        pressKey(nestedInput, 'enter');
+                        
+                        waitForSpy(okSpy);
+                        
+                        runs(function() {
+                            expect(okSpy).toHaveBeenCalled();
+                        });
+                    });
+                    
+                    it("should NOT fire outer OK handler on nested OK button", function() {
+                        pressKey(nestedOk, 'enter');
+                        
+                        waitForSpy(nestedOkSpy);
+                        
+                        runs(function() {
+                            expect(okSpy).not.toHaveBeenCalled();
+                        });
+                    });
+                    
+                    it("should NOT fire outer OK handler on nested Cancel button", function() {
+                        pressKey(nestedCancel, 'enter');
+                        
+                        waitForSpy(nestedCancelSpy);
+                        
+                        runs(function() {
+                            expect(okSpy).not.toHaveBeenCalled();
+                        });
+                    });
+                });
+                
+                describe("with defaultButton config", function() {
+                    beforeEach(function() {
+                        nestedPanel.defaultButton = 'nestedOk';
+                        panel.render(Ext.getBody());
+                    });
+                    
+                    describe("on nested input", function() {
+                        beforeEach(function() {
+                            pressKey(nestedInput, 'enter');
+                        
+                            waitForSpy(nestedOkSpy);
+                        });
+                        
+                        it("should fire nested OK handler", function() {
+                            expect(nestedOkSpy).toHaveBeenCalled();
+                        });
+                        
+                        it("should NOT fire outer OK handler", function() {
+                            // Check that OUTER spy hasn't been fired;
+                            // we can only get there if the above waitForSpy()
+                            // didn't timeout
+                            expect(okSpy).not.toHaveBeenCalled();
+                        });
+                        
+                        it("should have stopped the event", function() {
+                            expect(event.stopped).toBeTruthy();
+                        });
+                        
+                        it("should not have reached outer keydown handler", function() {
+                            expect(keydownSpy).not.toHaveBeenCalled();
+                        });
+                    });
+                    
+                    describe("on nested OK button", function() {
+                        beforeEach(function() {
+                            pressKey(nestedOk, 'enter');
+                            
+                            waitForSpy(nestedOkSpy);
+                        });
+                        
+                        it("should fire nested OK handler", function() {
+                            expect(nestedOkSpy).toHaveBeenCalled();
+                        });
+                        
+                        it("should NOT fire outer OK handler", function() {
+                            expect(okSpy).not.toHaveBeenCalled();
+                        });
+                        
+                        it("should have stopped the event", function() {
+                            expect(event.stopped).toBeTruthy();
+                        });
+                        
+                        it("should not have reached outer keydown handler", function() {
+                            expect(keydownSpy).not.toHaveBeenCalled();
+                        });
+                    });
+                    
+                    describe("on nested Cancel button", function() {
+                        beforeEach(function() {
+                            pressKey(nestedCancel, 'enter');
+                            
+                            waitForSpy(nestedCancelSpy);
+                        });
+                        
+                        it("should fire nested Cancel handler", function() {
+                            expect(nestedCancelSpy).toHaveBeenCalled();
+                        });
+                        
+                        it("should NOT fire nested OK handler", function() {
+                            expect(nestedOkSpy).not.toHaveBeenCalled();
+                        });
+                        
+                        it("should NOT fire outer OK handler", function() {
+                            expect(okSpy).not.toHaveBeenCalled();
+                        });
+                        
+                        it("should have not reached outer keydown handler", function() {
+                            expect(keydownSpy).not.toHaveBeenCalled();
+                        });
+                        
+                        it("should have stopped the event", function() {
+                            expect(event.stopped).toBeTruthy();
+                        });
+                    });
                 });
             });
         });
         
-        describe("with defaultButton", function() {
+        describe("nested w/ parent ViewController", function() {
+            var outerPanel;
+            
             beforeEach(function() {
-                panel.render(Ext.getBody());
+                setupPanel({
+                    buttons: [{
+                        reference: 'okButton',
+                        text: 'OK',
+                        listeners: {
+                            click: 'onOkButton'
+                        }
+                    }, {
+                        reference: 'cancelButton',
+                        text: 'Cancel',
+                        listeners: {
+                            click: 'onCancelButton'
+                        }
+                    }],
+                    
+                    controller: {
+                        xclass: 'Ext.app.ViewController',
+                        onOkButton: okSpy,
+                        onCancelButton: cancelSpy
+                    }
+                });
+                
+                outerPanel = new Ext.panel.Panel({
+                    renderTo: Ext.getBody(),
+                    x: 10,
+                    y: 10,
+                    width: 400,
+                    height: 400,
+                    items: [panel],
+                    
+                    // Having the outer ViewController triggers the issue
+                    controller: {
+                        xclass: 'Ext.app.ViewController'
+                    }
+                });
+            });
+            
+            afterEach(function() {
+                panel.el.un('keydown', keydownSpy);
+                
+                outerPanel.destroy();
+                outerPanel = null;
             });
             
             it("should fire OK handler in fooInput", function() {
@@ -2669,7 +3233,7 @@ describe("Ext.panel.Panel", function () {
                 waitForSpy(okSpy);
                 
                 runs(function() {
-                    expect(event.isStopped).toBeTruthy();
+                    expect(event.stopped).toBeTruthy();
                 });
             });
             
@@ -2684,222 +3248,174 @@ describe("Ext.panel.Panel", function () {
             });
         });
         
-        describe("with defaultButton and defaultButtonTarget", function() {
-            beforeEach(function() {
-                panel.defaultButtonTarget = 'el';
-                panel.render(Ext.getBody());
-            });
-            
-            it("should fire OK handler in fooInput", function() {
-                pressKey(fooInput, 'enter');
-                
-                waitForSpy(okSpy);
-                
-                runs(function() {
-                    expect(okSpy).toHaveBeenCalled();
-                });
-            });
-            
-            it("should fire OK handler in barInput", function() {
-                pressKey(barInput, 'enter');
-                
-                waitForSpy(okSpy);
-                
-                runs(function() {
-                    expect(okSpy).toHaveBeenCalled();
-                });
-            });
-            
-            it("should NOT fire OK handler on Cancel button", function() {
-                pressKey(cancelButton, 'enter');
-                
-                waitForSpy(cancelSpy);
-                
-                runs(function() {
-                    expect(okSpy).not.toHaveBeenCalled();
-                });
-            });
-            
-            it("should have stopped the keydown event", function() {
-                pressKey(fooInput, 'enter');
-                
-                waitForSpy(okSpy);
-                
-                runs(function() {
-                    expect(event.isStopped).toBeTruthy();
-                });
-            });
-        });
-        
-        describe("nested panel", function() {
-            var nestedPanel, nestedInput, nestedOk, nestedCancel,
-                nestedOkSpy, nestedCancelSpy;
-            
-            beforeEach(function() {
-                nestedOkSpy = jasmine.createSpy('Nested OK handler');
-                nestedCancelSpy = jasmine.createSpy('Nested Cancel handler');
-                
-                nestedPanel = panel.add({
-                    xtype: 'panel',
-                    title: 'nested',
-                    items: [{
-                        xtype: 'textfield',
-                        fieldLabel: 'Nested',
-                        reference: 'nestedInput'
-                    }],
-                    buttons: [{
-                        text: 'Nested OK',
-                        reference: 'nestedOk',
-                        handler: nestedOkSpy
-                    }, {
-                        text: 'Nested Cancel',
-                        reference: 'nestedCancel',
-                        handler: nestedCancelSpy
-                    }]
-                });
-                
-                nestedInput = panel.lookupReference('nestedInput');
-                nestedOk = panel.lookupReference('nestedOk');
-                nestedCancel = panel.lookupReference('nestedCancel');
-                
-                nestedOkSpy.andCallFake(function(btn, e) {
-                    event = e;
-                });
-                
-                nestedCancelSpy.andCallFake(function(btn, e) {
-                    event = e;
-                    
-                    e.stopEvent();
-                    
-                    return false;
-                });
-            });
+        describe('keyMap config', function() {
+            var outerPanel;
             
             afterEach(function() {
-                nestedOkSpy = nestedCancelSpy = null;
-                nestedInput = nestedOk = nestedCancel = null;
+                Ext.destroy(outerPanel);
             });
-            
-            describe("no defaultButton config", function() {
-                beforeEach(function() {
-                    panel.render(Ext.getBody());
-                });
-                
-                it("should fire outer OK handler on nested input", function() {
-                    pressKey(nestedInput, 'enter');
-                    
-                    waitForSpy(okSpy);
-                    
-                    runs(function() {
-                        expect(okSpy).toHaveBeenCalled();
+
+            it("should default call a method on the controller when keyMap is in config", function() {
+                var controller,
+                    outerController,
+                    InnerPanel = Ext.define(null, {
+                        extend: 'Ext.panel.Panel',
+                        keyMap: {
+                            A: 'handleA',           // Resolved to controller
+                            B: {
+                                handler: 'handleB'  // Resolved to controller
+                            },
+                            C: {
+                                handler: 'handleC', // Resolved to this
+                                scope: 'this'
+                            }
+                        },
+                        handleC: jasmine.createSpy()
+                    }),
+                    middlePanel = new Ext.panel.Panel({
+                        items: [new InnerPanel({
+                            keyMap: {
+                                D: 'handleD',           // Resolved to controller
+                                E: {
+                                    handler: 'handleE'  // Resolved to controller
+                                },
+                                F: {
+                                    handler: 'handleF', // Resolved to this
+                                    scope: 'this'                                                                                                                    
+                                }
+                            },
+                            handleF: jasmine.createSpy()
+                        })],
+                        controller: {
+                            xclass: 'Ext.app.ViewController',
+                            handleA: jasmine.createSpy(),
+                            handleB: jasmine.createSpy(),
+                            handleD: jasmine.createSpy(),
+                            handleE: jasmine.createSpy()
+                        }
                     });
+                    
+                outerPanel = new Ext.panel.Panel({
+                    items: middlePanel,
+                    renderTo: document.body,
+                    controller: {
+                        xclass: 'Ext.app.ViewController',
+                        handleA: jasmine.createSpy(),
+                        handleB: jasmine.createSpy(),
+                        handleD: jasmine.createSpy(),
+                        handleE: jasmine.createSpy()
+                    }
                 });
-                
-                it("should NOT fire outer OK handler on nested OK button", function() {
-                    pressKey(nestedOk, 'enter');
-                    
-                    waitForSpy(nestedOkSpy);
-                    
-                    runs(function() {
-                        expect(okSpy).not.toHaveBeenCalled();
-                    });
-                });
-                
-                it("should NOT fire outer OK handler on nested Cancel button", function() {
-                    pressKey(nestedCancel, 'enter');
-                    
-                    waitForSpy(nestedCancelSpy);
-                    
-                    runs(function() {
-                        expect(okSpy).not.toHaveBeenCalled();
-                    });
-                });
+                controller = middlePanel.controller;
+                outerController = outerPanel.controller;
+
+                panel = middlePanel.down('panel');
+                jasmine.fireKeyEvent(panel.el, 'keydown', 65); //'A'
+                jasmine.fireKeyEvent(panel.el, 'keydown', 66); //'B'
+                jasmine.fireKeyEvent(panel.el, 'keydown', 67); //'C'
+                jasmine.fireKeyEvent(panel.el, 'keydown', 68); //'D'
+                jasmine.fireKeyEvent(panel.el, 'keydown', 69); //'E'
+                jasmine.fireKeyEvent(panel.el, 'keydown', 70); //'F'
+
+                // Inner panel. A&B go to controller, C to this
+                expect(controller.handleA.callCount).toBe(1);
+                expect(controller.handleB.callCount).toBe(1);
+                expect(panel.handleC.callCount).toBe(1);
+
+                // Middle panel. D&E go to controller, F to this
+                expect(controller.handleD.callCount).toBe(1);
+                expect(controller.handleE.callCount).toBe(1);
+                expect(panel.handleF.callCount).toBe(1);
+
+                // Make sure scope resolution does not climb too high
+                expect(outerController.handleA.callCount).toBe(0);
+                expect(outerController.handleB.callCount).toBe(0);
+                expect(outerController.handleD.callCount).toBe(0);
+                expect(outerController.handleE.callCount).toBe(0);
             });
-            
-            describe("with defaultButton config", function() {
-                beforeEach(function() {
-                    nestedPanel.defaultButton = 'nestedOk';
-                    panel.render(Ext.getBody());
-                });
-                
-                describe("on nested input", function() {
-                    beforeEach(function() {
-                        pressKey(nestedInput, 'enter');
-                        
-                        waitForSpy(nestedOkSpy);
+
+            it("should call the method when controller and keyMap are in class definition", function() {
+                var controller,
+                    InnerPanel = Ext.define(null, {
+                        extend: 'Ext.panel.Panel',
+                        keyMap: {
+                            A: 'handleA'           // Resolved to controller
+                        },
+                        controller: {
+                            xclass: 'Ext.app.ViewController',
+                            handleA: jasmine.createSpy()
+                        }
                     });
                     
-                    it("should fire nested OK handler", function() {
-                        expect(nestedOkSpy).toHaveBeenCalled();
+                    outerPanel = new Ext.panel.Panel({
+                        items: [new InnerPanel({
+                        })],
+                        renderTo: document.body
                     });
                     
-                    it("should NOT fire outer OK handler", function() {
-                        // Check that OUTER spy hasn't been fired;
-                        // we can only get there if the above waitForSpy()
-                        // didn't timeout
-                        expect(okSpy).not.toHaveBeenCalled();
+                panel = outerPanel.down('panel');
+                controller = panel.controller;
+
+                jasmine.fireKeyEvent(panel.el, 'keydown', 65); //'A'
+
+                // Inner panel. A goes to controller.
+                expect(controller.handleA.callCount).toBe(1);
+            });
+
+            it("should call the method when controller is in class definition and keyMap in config", function() {
+                var controller,
+                    InnerPanel = Ext.define(null, {
+                        extend: 'Ext.panel.Panel',
+                        controller: {
+                            xclass: 'Ext.app.ViewController',
+                            handleA: jasmine.createSpy()
+                        }
                     });
                     
-                    it("should have stopped the event", function() {
-                        expect(event.isStopped).toBeTruthy();
+                    outerPanel = new Ext.panel.Panel({
+                        items: [new InnerPanel({
+                            keyMap: {
+                                A: 'handleA'           // Resolved to controller
+                            }
+                        })],
+                        renderTo: document.body
                     });
                     
-                    it("should not have reached outer keydown handler", function() {
-                        expect(keydownSpy).not.toHaveBeenCalled();
-                    });
-                });
-                
-                describe("on nested OK button", function() {
-                    beforeEach(function() {
-                        pressKey(nestedOk, 'enter');
-                    
-                        waitForSpy(nestedOkSpy);
-                    });
-                    
-                    it("should fire nested OK handler", function() {
-                        expect(nestedOkSpy).toHaveBeenCalled();
-                    });
-                    
-                    it("should NOT fire outer OK handler", function() {
-                        expect(okSpy).not.toHaveBeenCalled();
+                panel = outerPanel.down('panel');
+                controller = panel.controller;
+
+                jasmine.fireKeyEvent(panel.el, 'keydown', 65); //'A'
+
+                // Inner panel. A goes to controller.
+                expect(controller.handleA.callCount).toBe(1);
+            });
+
+            it("should call the method when controller is in config and keyMap in class definition", function() {
+                var controller,
+                    InnerPanel = Ext.define(null, {
+                        extend: 'Ext.panel.Panel',
+                        keyMap: {
+                            A: 'handleA'           // Resolved to controller
+                        }
                     });
                     
-                    it("should have stopped the event", function() {
-                        expect(event.isStopped).toBeTruthy();
+                    outerPanel = new Ext.panel.Panel({
+                        items: [new InnerPanel({
+                            controller: {
+                                xclass: 'Ext.app.ViewController',
+                                handleA: jasmine.createSpy()
+                            }
+                        })],
+                        renderTo: document.body
                     });
                     
-                    it("should not have reached outer keydown handler", function() {
-                        expect(keydownSpy).not.toHaveBeenCalled();
-                    });
-                });
-                
-                describe("on nested Cancel button", function() {
-                    beforeEach(function() {
-                        pressKey(nestedCancel, 'enter');
-                        
-                        waitForSpy(nestedCancelSpy);
-                    });
-                    
-                    it("should fire nested Cancel handler", function() {
-                        expect(nestedCancelSpy).toHaveBeenCalled();
-                    });
-                    
-                    it("should NOT fire nested OK handler", function() {
-                        expect(nestedOkSpy).not.toHaveBeenCalled();
-                    });
-                    
-                    it("should NOT fire outer OK handler", function() {
-                        expect(okSpy).not.toHaveBeenCalled();
-                    });
-                    
-                    it("should have not reached outer keydown handler", function() {
-                        expect(keydownSpy).not.toHaveBeenCalled();
-                    });
-                    
-                    it("should have stopped the event", function() {
-                        expect(event.isStopped).toBeTruthy();
-                    });
-                });
+                panel = outerPanel.down('panel');
+                controller = panel.controller;
+
+                jasmine.fireKeyEvent(panel.el, 'keydown', 65); //'A'
+
+                // Inner panel. A goes to controller.
+                expect(controller.handleA.callCount).toBe(1);
             });
         });
     });
@@ -3402,24 +3918,6 @@ describe("Ext.panel.Panel", function () {
     });
     
     describe("ARIA", function() {
-        var expectAriaAttr = jasmine.expectAriaAttr;
-        
-        function expectAria(attr, value) {
-            jasmine.expectAriaAttr(panel, attr, value);
-        }
-        
-        function expectNoAria(attr) {
-            jasmine.expectNoAriaAttr(panel, attr);
-        }
-        
-        function expectBodyAria(attr, value) {
-            jasmine.expectAriaAttr(panel.body, attr, value);
-        }
-        
-        function expectNoBodyAria(attr) {
-            jasmine.expectNoAriaAttr(panel.body, attr);
-        }
-        
         describe("attributes", function() {
             describe("ariaEl", function() {
                 beforeEach(function() {
@@ -3438,7 +3936,7 @@ describe("Ext.panel.Panel", function () {
                     });
                     
                     it("should have presentation role by default", function() {
-                        expectAria('role', 'presentation');
+                        expect(panel).toHaveAttr('role', 'presentation');
                     });
                 });
                 
@@ -3449,15 +3947,15 @@ describe("Ext.panel.Panel", function () {
                         });
                         
                         it("should set el role to ariaRole", function() {
-                            expectAria('role', 'foo');
+                            expect(panel).toHaveAttr('role', 'foo');
                         });
                         
                         it("should not set ariaRole on the body el", function() {
-                            expectBodyAria('role', 'presentation');
+                            expect(panel.body).toHaveAttr('role', 'presentation');
                         });
                         
                         it("should not have aria-expanded", function() {
-                            expectNoAria('aria-expanded');
+                            expect(panel).not.toHaveAttr('aria-expanded');
                         });
                     });
                     
@@ -3469,11 +3967,19 @@ describe("Ext.panel.Panel", function () {
                         });
                         
                         it("should not have aria-label", function() {
-                            expectNoAria('aria-label');
+                            expect(panel).not.toHaveAttr('aria-label');
                         });
                         
                         it("should not have aria-labelledby", function() {
-                            expectNoAria('aria-labelledby');
+                            expect(panel).not.toHaveAttr('aria-labelledby');
+                        });
+                        
+                        it("should replace aria-labelledby", function() {
+                            panel.ariaEl.dom.setAttribute('aria-labelledby', 'foo');
+                            
+                            panel.setTitle('blerg');
+                            
+                            expect(panel).toHaveAttr('aria-labelledby', panel.header.titleCmp.textEl.id);
                         });
                     });
                     
@@ -3484,14 +3990,29 @@ describe("Ext.panel.Panel", function () {
                                 title: 'blerg',
                                 header: false
                             });
+                        });
+                        
+                        it("should not have aria-labelledby", function() {
+                            expect(panel).not.toHaveAttr('aria-labelledby');
+                        });
+                        
+                        // https://sencha.jira.com/browse/EXTJS-18939
+                        xit("should have aria-label", function() {
+                            expect(panel).toHaveAttr('aria-label', 'blerg');
+                        });
+                        
+                        it("should not remove aria-labelledby", function() {
+                            panel.ariaEl.dom.setAttribute('aria-labelledby', 'xyzzy');
                             
-                            it("should not have aria-labelledby", function() {
-                                expectNoAria('aria-labelledby');
-                            });
+                            panel.setTitle('throbbe');
                             
-                            it("should have aria-label", function() {
-                                expectAria('aria-label', 'blerg');
-                            });
+                            expect(panel).toHaveAttr('aria-labelledby', 'xyzzy');
+                        });
+                        
+                        it("should strip HTML markup from title", function() {
+                            panel.setTitle('<span style="background-color: red">foo</span>');
+                            
+                            expect(panel).toHaveAttr('aria-label', 'foo');
                         });
                     });
                     
@@ -3504,19 +4025,25 @@ describe("Ext.panel.Panel", function () {
                         });
                         
                         it("should have aria-labelledby", function() {
-                            expectAria('aria-labelledby', panel.header.titleCmp.textEl.id);
+                            expect(panel).toHaveAttr('aria-labelledby', panel.header.titleCmp.textEl.id);
                         });
                         
                         it("should not have aria-label", function() {
-                            expectNoAria('aria-label');
+                            expect(panel).not.toHaveAttr('aria-label');
                         });
                         
                         it("should have presentation role on the header with no tools", function() {
-                            expectAriaAttr(panel.header, 'role', 'presentation');
+                            expect(panel.header).toHaveAttr('role', 'presentation');
                         });
                         
                         it("should have presentation role on titleCmp", function() {
-                            expectAriaAttr(panel.header.titleCmp, 'role', 'presentation');
+                            expect(panel.header.titleCmp).toHaveAttr('role', 'presentation');
+                        });
+                        
+                        it("should not remove aria-labelledby", function() {
+                            panel.setTitle('bonzo');
+                            
+                            expect(panel).toHaveAttr('aria-labelledby', panel.header.titleCmp.textEl.id);
                         });
                     });
                 });
@@ -3530,11 +4057,11 @@ describe("Ext.panel.Panel", function () {
                     });
                     
                     it("should have aria-labelledby", function() {
-                        expectAria('aria-labelledby', panel.headingEl.id);
+                        expect(panel).toHaveAttr('aria-labelledby', panel.headingEl.id);
                     });
                     
                     it("should not have aria-label", function() {
-                        expectNoAria('aria-label');
+                        expect(panel).not.toHaveAttr('aria-label');
                     });
                 });
                 
@@ -3549,12 +4076,12 @@ describe("Ext.panel.Panel", function () {
                     
                     // TabPanel sets it
                     it("should not set aria-labelledby", function() {
-                        expectNoAria('aria-labelledby');
+                        expect(panel).not.toHaveAttr('aria-labelledby');
                     });
                     
                     // This would get in the way
                     it("should not set aria-label", function() {
-                        expectNoAria('aria-label');
+                        expect(panel).not.toHaveAttr('aria-label');
                     });
                 });
             });
@@ -3570,11 +4097,11 @@ describe("Ext.panel.Panel", function () {
                     });
                     
                     it("should have presentation role by default", function() {
-                        expectBodyAria('role', 'presentation');
+                        expect(panel.body).toHaveAttr('role', 'presentation');
                     });
                     
                     it("should not render body ARIA attributes", function() {
-                        expectNoBodyAria('aria-foo');
+                        expect(panel.body).not.toHaveAttr('aria-foo');
                     });
                 });
                 
@@ -3589,20 +4116,20 @@ describe("Ext.panel.Panel", function () {
                     });
                     
                     it("should set role to bodyAriaRole", function() {
-                        expectBodyAria('role', 'frob');
+                        expect(panel.body).toHaveAttr('role', 'frob');
                     });
                     
                     it("should render body ARIA attributes", function() {
-                        expectBodyAria('aria-qux', 'bonzo');
+                        expect(panel.body).toHaveAttr('aria-qux', 'bonzo');
                     });
                     
                     it("should not set bodyAriaRole on the main el", function() {
-                        expectAria('role', 'presentation');
+                        expect(panel).toHaveAttr('role', 'presentation');
                     });
                 });
             });
             
-            // The purpose of tool tests is to make sure the attribute mungung
+            // The purpose of tool tests is to make sure the attribute munging
             // we're doing for certain cases does not spread beyond these cases.
             // Look for Accordion in Panel to see more.
             describe("standard tools", function() {
@@ -3632,11 +4159,11 @@ describe("Ext.panel.Panel", function () {
                     });
                     
                     it("should have button role", function() {
-                        expectAriaAttr(closeTool, 'role', 'button');
+                        expect(closeTool).toHaveAttr('role', 'button');
                     });
                     
                     it("should have aria-label", function() {
-                        expectAriaAttr(closeTool, 'aria-label', 'Close panel');
+                        expect(closeTool).toHaveAttr('aria-label', 'Close panel');
                     });
                 });
                 
@@ -3646,11 +4173,11 @@ describe("Ext.panel.Panel", function () {
                     });
                     
                     it("should have button role", function() {
-                        expectAriaAttr(collapseTool, 'role', 'button');
+                        expect(collapseTool).toHaveAttr('role', 'button');
                     });
                     
                     it("should have aria-label", function() {
-                        expectAriaAttr(collapseTool, 'aria-label', 'Collapse panel');
+                        expect(collapseTool).toHaveAttr('aria-label', 'Collapse panel');
                     });
                 });
                 
@@ -3664,17 +4191,25 @@ describe("Ext.panel.Panel", function () {
                     });
                     
                     it("should have button role", function() {
-                        expectAriaAttr(expandTool, 'role', 'button');
+                        expect(expandTool).toHaveAttr('role', 'button');
                     });
                     
                     it("should have aria-label", function() {
-                        expectAriaAttr(expandTool, 'aria-label', 'Expand panel');
+                        expect(expandTool).toHaveAttr('aria-label', 'Expand panel');
                     });
                 });
             });
         }); // attributes
         
         describe("regions", function() {
+            beforeEach(function() {
+                Ext.ariaWarn = Ext._ariaWarn;
+            });
+            
+            afterEach(function() {
+                Ext.ariaWarn = Ext.emptyFn;
+            });
+            
             describe("automagic ariaRole", function() {
                 it("should work when isViewportBorderChild", function() {
                     makePanel({ isViewportBorderChild: true, title: 'bonzo' });
@@ -3699,7 +4234,7 @@ describe("Ext.panel.Panel", function () {
                     
                     var warn = Ext.log.warn.mostRecentCall.args[0];
                     
-                    expect(warn).toMatch(/does not have a title/);
+                    expect(warn.msg).toMatch(/does not have a title/);
                 });
                 
                 it("should warn when ariaRole == region && !title", function() {
@@ -3709,7 +4244,7 @@ describe("Ext.panel.Panel", function () {
                     
                     var warn = Ext.log.warn.mostRecentCall.args[0];
                     
-                    expect(warn).toMatch(/does not have a title/);
+                    expect(warn.msg).toMatch(/does not have a title/);
                 });
             });
             
@@ -3812,14 +4347,14 @@ describe("Ext.panel.Panel", function () {
                                 it("should set aria-expanded to true by default", function() {
                                     panel.render(Ext.getBody());
                                     
-                                    expectAria('aria-expanded', 'true');
+                                    expect(panel).toHaveAttr('aria-expanded', 'true');
                                 });
                                 
                                 it("should set aria-expanded to false after collapsing", function() {
                                     panel.collapse();
                                     panel.render(Ext.getBody());
                                     
-                                    expectAria('aria-expanded', 'false');
+                                    expect(panel).toHaveAttr('aria-expanded', 'false');
                                 });
                                 
                                 it("should set aria-expanded to true after expanding", function() {
@@ -3827,7 +4362,7 @@ describe("Ext.panel.Panel", function () {
                                     panel.expand();
                                     panel.render(Ext.getBody());
                                     
-                                    expectAria('aria-expanded', 'true');
+                                    expect(panel).toHaveAttr('aria-expanded', 'true');
                                 });
                             });
                             
@@ -3839,14 +4374,14 @@ describe("Ext.panel.Panel", function () {
                                 it("should set aria-expanded to false by default", function() {
                                     panel.render(Ext.getBody());
                                     
-                                    expectAria('aria-expanded', 'false');
+                                    expect(panel).toHaveAttr('aria-expanded', 'false');
                                 });
                                 
                                 it("should set aria-expanded to true after expanding", function() {
                                     panel.expand();
                                     panel.render(Ext.getBody());
                                     
-                                    expectAria('aria-expanded', 'true');
+                                    expect(panel).toHaveAttr('aria-expanded', 'true');
                                 });
                                 
                                 it("should set aria-expanded to false after collapsing", function() {
@@ -3854,7 +4389,7 @@ describe("Ext.panel.Panel", function () {
                                     panel.collapse();
                                     panel.render(Ext.getBody());
                                     
-                                    expectAria('aria-expanded', 'false');
+                                    expect(panel).toHaveAttr('aria-expanded', 'false');
                                 });
                             });
                         });
@@ -3879,7 +4414,7 @@ describe("Ext.panel.Panel", function () {
                             });
                             
                             it("should set aria-expanded to true by default", function() {
-                                expectAria('aria-expanded', 'true');
+                                expect(panel).toHaveAttr('aria-expanded', 'true');
                             });
                             
                             it("should set aria-expanded to false after collapsing", function() {
@@ -3890,7 +4425,7 @@ describe("Ext.panel.Panel", function () {
                                 waitsForSpy(collapseSpy, 'collapse', 1000);
                                 
                                 runs(function() {
-                                    expectAria('aria-expanded', 'false');
+                                    expect(panel).toHaveAttr('aria-expanded', 'false');
                                 });
                             });
                             
@@ -3908,7 +4443,7 @@ describe("Ext.panel.Panel", function () {
                                 waitsForSpy(expandSpy, 'expand', 1000);
                                 
                                 runs(function() {
-                                    expectAria('aria-expanded', 'true');
+                                    expect(panel).toHaveAttr('aria-expanded', 'true');
                                 });
                             });
                         });
@@ -3919,9 +4454,133 @@ describe("Ext.panel.Panel", function () {
                 makeSuite(false);
             }); // aria-expanded
         }); // state
+        
+        describe("collapsible", function() {
+            var ct, west;
+            
+            function makeContainer(itemConfig, ctConfig) {
+                ctConfig = Ext.apply({
+                    renderTo: Ext.getBody(),
+                    width: 600,
+                    height: 600,
+                    layout: 'border',
+                    
+                    items: [Ext.apply({
+                        xtype: 'panel',
+                        title: 'West',
+                        region: 'west',
+                        collapsible: true,
+                        collapseMode: undefined,
+                        width: 200
+                    }, itemConfig), {
+                        region: 'center'
+                    }]
+                }, ctConfig);
+                
+                ct = new Ext.container.Container(ctConfig);
+                
+                west = ct.down('[region=west]');
+                
+                west.collapse();
+            }
+            
+            afterEach(function() {
+                ct = Ext.destroy(ct);
+            });
+            
+            describe("reexpander", function() {
+                it("should copy enableFocusableContainer", function() {
+                    makeContainer({
+                        header: {
+                            enableFocusableContainer: false
+                        }
+                    });
+                    
+                    expect(west.reExpander.enableFocusableContainer).toBe(false);
+                });
+                
+                it("should copy inactiveChildTabIndex", function() {
+                    makeContainer({
+                        header: {
+                            inactiveChildTabIndex: -10
+                        }
+                    });
+                    
+                    expect(west.reExpander.inactiveChildTabIndex).toBe(-10);
+                });
+                
+                it("should copy allowFocusingDisabledChildren", function() {
+                    makeContainer({
+                        header: {
+                            allowFocusingDisabledChildren: true
+                        }
+                    });
+                    
+                    expect(west.reExpander.allowFocusingDisabledChildren).toBe(true);
+                });
+                
+                it("should set tabIndex to the reExpander tabGuards", function() {
+                    makeContainer({
+                        header: {
+                            activeChildTabIndex: 42
+                        }
+                    });
+                    
+                    expect(west.reExpander.tabGuardBeforeEl).toHaveAttr('tabIndex', '42');
+                    expect(west.reExpander.tabGuardAfterEl).toHaveAttr('tabIndex', '42');
+                });
+            });
+            
+            describe("placeholder", function() {
+                it("should copy enableFocusableContainer", function() {
+                    makeContainer({
+                        collapseMode: 'placeholder',
+                        header: {
+                            enableFocusableContainer: false
+                        }
+                    });
+                    
+                    expect(west.placeholder.enableFocusableContainer).toBe(false);
+                });
+                
+                it("should copy inactiveChildTabIndex", function() {
+                    makeContainer({
+                        collapseMode: 'placeholder',
+                        header: {
+                            inactiveChildTabIndex: -2
+                        }
+                    });
+                    
+                    expect(west.placeholder.inactiveChildTabIndex).toBe(-2);
+                });
+                
+                it("should copy allowFocusingDisabledChildren", function() {
+                    makeContainer({
+                        collapseMode: 'placeholder',
+                        header: {
+                            allowFocusingDisabledChildren: true
+                        }
+                    });
+                    
+                    expect(west.placeholder.allowFocusingDisabledChildren).toBe(true);
+                });
+                
+                it("should set tabIndex on the placeholder tabGuards", function() {
+                    makeContainer({
+                        collapseMode: 'placeholder',
+                        header: {
+                            activeChildTabIndex: 42
+                        }
+                    });
+                    
+                    expect(west.placeholder.tabGuardBeforeEl).toHaveAttr('tabIndex', '42');
+                    expect(west.placeholder.tabGuardAfterEl).toHaveAttr('tabIndex', '42');
+                });
+            });
+        });
 
-        describe('tab guards', function () {
-            it('should contain tab guard elements with no dockedItems', function () {
+        describe("tab guards", function () {
+            it("should contain tab guard elements with no dockedItems", function() {
                 makePanel({
                     tabGuard: true,
                     width: 300
@@ -3932,11 +4591,17 @@ describe("Ext.panel.Panel", function () {
                 expect(children.length).toBe(3);
 
                 expect(children[0].id).toBe(panel.tabGuardBeforeEl.id);
-                expect(children[1].id).toBe(panel.body.id);
+                expect(children[1].id).toBe(panel.bodyWrap.id);
                 expect(children[2].id).toBe(panel.tabGuardAfterEl.id);
+                
+                children = panel.bodyWrap.dom.childNodes;
+                
+                expect(children.length).toBe(1);
+                
+                expect(children[0].id).toBe(panel.body.id);
             });
 
-            it('should contain tab guard elements with header, tbar and bbar', function () {
+            it("should contain tab guard elements with header, tbar and bbar", function() {
                 makePanel({
                     tabGuard: true,
                     width: 300,
@@ -3954,18 +4619,24 @@ describe("Ext.panel.Panel", function () {
                 var children = panel.el.dom.childNodes;
                 var docked = panel.dockedItems;
 
-                expect(children.length).toBe(6);
+                expect(children.length).toBe(4);
 
                 expect(children[0].id).toBe(panel.tabGuardBeforeEl.id);
                 expect(children[1].id).toBe(panel.header.id);
-                expect(children[1].id).toBe(docked.getAt(0).id);
-                expect(children[2].id).toBe(docked.getAt(1).id);
-                expect(children[3].id).toBe(panel.body.id);
-                expect(children[4].id).toBe(docked.getAt(2).id);
-                expect(children[5].id).toBe(panel.tabGuardAfterEl.id);
+                expect(children[2].id).toBe(panel.bodyWrap.id);
+                expect(children[3].id).toBe(panel.tabGuardAfterEl.id);
+                
+                children = panel.bodyWrap.dom.childNodes;
+                
+                expect(children.length).toBe(3);
+                
+                // Header is docked at 0!
+                expect(children[0].id).toBe(docked.getAt(1).id);
+                expect(children[1].id).toBe(panel.body.id);
+                expect(children[2].id).toBe(docked.getAt(2).id);
             });
 
-            it('should contain tab guard elements with tbar and bbar', function () {
+            it('should contain tab guard elements with tbar and bbar but no header', function() {
                 makePanel({
                     tabGuard: true,
                     width: 300,
@@ -3982,69 +4653,94 @@ describe("Ext.panel.Panel", function () {
                 var children = panel.el.dom.childNodes;
                 var docked = panel.dockedItems;
 
-                expect(children.length).toBe(5);
+                expect(children.length).toBe(3);
 
                 expect(children[0].id).toBe(panel.tabGuardBeforeEl.id);
-                expect(children[1].id).toBe(docked.getAt(0).id);
-                expect(children[2].id).toBe(panel.body.id);
-                expect(children[3].id).toBe(docked.getAt(1).id);
-                expect(children[4].id).toBe(panel.tabGuardAfterEl.id);
-            });
-
-            it('should contain tab guard elements with header adding tbar then bbar', function () {
-                makePanel({
-                    tabGuard: true,
-                    width: 300,
-                    title: 'Hello'
-                });
-
-                var children = panel.el.dom.childNodes;
-                var docked = panel.dockedItems;
-
-                expect(children.length).toBe(4);
-
-                var tbar = panel.addDocked({
-                    xtype: 'toolbar',
-                    dock: 'top',
-                    items: [{
-                        xtype: 'component',
-                        html: 'first'
-                    }]
-                });
-
-                var bbar = panel.addDocked({
-                    xtype: 'toolbar',
-                    dock: 'bottom',
-                    items: [{
-                        xtype: 'component',
-                        html: 'last'
-                    }]
-                });
-
-                expect(children.length).toBe(6);
-
-                expect(children[0].id).toBe(panel.tabGuardBeforeEl.id);
-                expect(children[1].id).toBe(panel.header.id);
-                expect(children[1].id).toBe(docked.getAt(0).id);
+                expect(children[1].id).toBe(panel.bodyWrap.id);
+                expect(children[2].id).toBe(panel.tabGuardAfterEl.id);
+                
+                children = panel.bodyWrap.dom.childNodes;
+                
+                expect(children.length).toBe(3);
+                
+                expect(children[0].id).toBe(docked.getAt(0).id);
+                expect(children[1].id).toBe(panel.body.id);
                 expect(children[2].id).toBe(docked.getAt(1).id);
-                expect(children[2].id).toBe(tbar[0].id);
-                expect(children[3].id).toBe(panel.body.id);
-                expect(children[4].id).toBe(docked.getAt(2).id);
-                expect(children[4].id).toBe(bbar[0].id);
-                expect(children[5].id).toBe(panel.tabGuardAfterEl.id);
             });
 
-            it('should contain tab guard elements with header adding bbar then tbar', function () {
+            it('should contain tab guard elements with header adding tbar then bbar', function() {
                 makePanel({
                     tabGuard: true,
                     width: 300,
                     title: 'Hello'
                 });
 
-                var children = panel.el.dom.childNodes;
+                var elChildren = panel.el.dom.childNodes;
+                var wrapChildren = panel.bodyWrap.dom.childNodes;
                 var docked = panel.dockedItems;
 
-                expect(children.length).toBe(4);
+                expect(elChildren.length).toBe(4);
+                
+                expect(elChildren[0].id).toBe(panel.tabGuardBeforeEl.id);
+                expect(elChildren[1].id).toBe(panel.header.id);
+                expect(elChildren[2].id).toBe(panel.bodyWrap.id);
+                expect(elChildren[3].id).toBe(panel.tabGuardAfterEl.id);
+                
+                expect(wrapChildren.length).toBe(1);
+                
+                expect(wrapChildren[0].id).toBe(panel.body.id);
+                
+                var tbar = panel.addDocked({
+                    xtype: 'toolbar',
+                    dock: 'top',
+                    items: [{
+                        xtype: 'component',
+                        html: 'first'
+                    }]
+                });
+
+                var bbar = panel.addDocked({
+                    xtype: 'toolbar',
+                    dock: 'bottom',
+                    items: [{
+                        xtype: 'component',
+                        html: 'last'
+                    }]
+                });
+
+                expect(elChildren.length).toBe(4);
+
+                expect(elChildren[0].id).toBe(panel.tabGuardBeforeEl.id);
+                expect(elChildren[1].id).toBe(panel.header.id);
+                expect(elChildren[2].id).toBe(panel.bodyWrap.id);
+                expect(elChildren[3].id).toBe(panel.tabGuardAfterEl.id);
+                
+                expect(wrapChildren.length).toBe(3);
+                
+                // Header is docked at index 0!
+                expect(wrapChildren[0].id).toBe(docked.getAt(1).id);
+                expect(wrapChildren[0].id).toBe(tbar[0].id);
+                expect(wrapChildren[1].id).toBe(panel.body.id);
+                expect(wrapChildren[2].id).toBe(docked.getAt(2).id);
+                expect(wrapChildren[2].id).toBe(bbar[0].id);
+            });
+
+            it('should contain tab guard elements with header adding bbar then tbar', function() {
+                makePanel({
+                    tabGuard: true,
+                    width: 300,
+                    title: 'Hello'
+                });
+
+                var elChildren = panel.el.dom.childNodes;
+                var wrapChildren = panel.bodyWrap.dom.childNodes;
+                var docked = panel.dockedItems;
+
+                expect(elChildren.length).toBe(4);
+                expect(elChildren[0].id).toBe(panel.tabGuardBeforeEl.id);
+                expect(elChildren[1].id).toBe(panel.header.id);
+                expect(elChildren[2].id).toBe(panel.bodyWrap.id);
+                expect(elChildren[3].id).toBe(panel.tabGuardAfterEl.id);
 
                 var bbar = panel.addDocked({
                     xtype: 'toolbar',
@@ -4064,30 +4760,39 @@ describe("Ext.panel.Panel", function () {
                     }]
                 });
 
-                expect(children.length).toBe(6);
+                expect(elChildren.length).toBe(4);
 
-                expect(children[0].id).toBe(panel.tabGuardBeforeEl.id);
-                expect(children[1].id).toBe(panel.header.id);
-                expect(children[1].id).toBe(docked.getAt(0).id);
-                expect(children[2].id).toBe(docked.getAt(2).id);
-                expect(children[2].id).toBe(tbar[0].id);
-                expect(children[3].id).toBe(panel.body.id);
-                expect(children[4].id).toBe(docked.getAt(1).id);
-                expect(children[4].id).toBe(bbar[0].id);
-                expect(children[5].id).toBe(panel.tabGuardAfterEl.id);
+                expect(elChildren[0].id).toBe(panel.tabGuardBeforeEl.id);
+                expect(elChildren[1].id).toBe(panel.header.id);
+                expect(elChildren[2].id).toBe(panel.bodyWrap.id);
+                expect(elChildren[3].id).toBe(panel.tabGuardAfterEl.id);
+                
+                expect(wrapChildren.length).toBe(3);
+                
+                // Header is docked at index 0!
+                expect(wrapChildren[0].id).toBe(docked.getAt(2).id);
+                expect(wrapChildren[0].id).toBe(tbar[0].id);
+                expect(wrapChildren[1].id).toBe(panel.body.id);
+                expect(wrapChildren[2].id).toBe(docked.getAt(1).id);
+                expect(wrapChildren[2].id).toBe(bbar[0].id);
             });
 
-            it('should contain tab guard elements with header adding all bars', function () {
+            it('should contain tab guard elements with header adding all bars', function() {
                 makePanel({
                     tabGuard: true,
                     width: 300,
                     title: 'Hello'
                 });
 
-                var children = panel.el.dom.childNodes;
+                var elChildren = panel.el.dom.childNodes;
+                var wrapChildren = panel.bodyWrap.dom.childNodes;
                 var docked = panel.dockedItems;
 
-                expect(children.length).toBe(4);
+                expect(elChildren.length).toBe(4);
+                expect(elChildren[0].id).toBe(panel.tabGuardBeforeEl.id);
+                expect(elChildren[1].id).toBe(panel.header.id);
+                expect(elChildren[2].id).toBe(panel.bodyWrap.id);
+                expect(elChildren[3].id).toBe(panel.tabGuardAfterEl.id);
 
                 var bbar = panel.addDocked({
                     xtype: 'toolbar',
@@ -4125,22 +4830,242 @@ describe("Ext.panel.Panel", function () {
                     }]
                 });
 
-                expect(children.length).toBe(8);
+                expect(elChildren.length).toBe(4);
 
-                expect(children[0].id).toBe(panel.tabGuardBeforeEl.id);
-                expect(children[1].id).toBe(panel.header.id);
-                expect(children[1].id).toBe(docked.getAt(0).id);
-                expect(children[2].id).toBe(docked.getAt(4).id);
-                expect(children[2].id).toBe(tbar[0].id);
-                expect(children[3].id).toBe(docked.getAt(3).id);
-                expect(children[3].id).toBe(lbar[0].id);
-                expect(children[4].id).toBe(panel.body.id);
-                expect(children[5].id).toBe(docked.getAt(2).id);
-                expect(children[5].id).toBe(rbar[0].id);
-                expect(children[6].id).toBe(docked.getAt(1).id);
-                expect(children[6].id).toBe(bbar[0].id);
-                expect(children[7].id).toBe(panel.tabGuardAfterEl.id);
+                expect(elChildren[0].id).toBe(panel.tabGuardBeforeEl.id);
+                expect(elChildren[1].id).toBe(panel.header.id);
+                expect(elChildren[2].id).toBe(panel.bodyWrap.id);
+                expect(elChildren[3].id).toBe(panel.tabGuardAfterEl.id);
+                
+                expect(wrapChildren.length).toBe(5);
+
+                // Header is docked at index 0!
+                expect(wrapChildren[0].id).toBe(docked.getAt(4).id);
+                expect(wrapChildren[0].id).toBe(tbar[0].id);
+                expect(wrapChildren[1].id).toBe(docked.getAt(3).id);
+                expect(wrapChildren[1].id).toBe(lbar[0].id);
+                expect(wrapChildren[2].id).toBe(panel.body.id);
+                expect(wrapChildren[3].id).toBe(docked.getAt(2).id);
+                expect(wrapChildren[3].id).toBe(rbar[0].id);
+                expect(wrapChildren[4].id).toBe(docked.getAt(1).id);
+                expect(wrapChildren[4].id).toBe(bbar[0].id);
             });
         });
     }); // ARIA
+
+    describe("Docked component", function(){
+        /*
+        This one tests the following scenario:
+        - a panel has a docked item
+        - the panel is collapsed
+        - the docked item is removed and more items are docked to the panel
+        - the panel is expanded
+        - should correctly restore visibility of the new items
+        */
+        it('should restore its visibility when panel is expanded', function(){
+            var panelCollapsed = false,
+                panelExpanded = false;
+
+            makePanel({
+                collapsible: true,
+                collapseDirection: 'top',
+                title: 'Foo',
+                dockedItems: [{
+                    itemId: 'foo',
+                    xtype: 'panel',
+                    title: 'Docked',
+                    dock: 'right',
+                    width: 100,
+                    html: 'Test'
+                }],
+
+                listeners: {
+                    collapse: function() { panelCollapsed = true; },
+                    expand: function() { panelExpanded = true; }
+                }
+            });
+
+            panel.collapse();
+
+            waitsFor(function(){
+                return panelCollapsed;
+            });
+
+            runs(function(){
+                var docked = panel.down('#foo');
+
+                expect(docked.el.isVisible()).toBe(false);
+                docked.destroy();
+
+                panel.addDocked({
+                    itemId: 'nofoo',
+                    xtype: 'panel',
+                    title: 'Docked foo',
+                    dock: 'left',
+                    width: 50,
+                    html: 'No foo'
+                });
+
+                panel.expand();
+
+                waitsFor(function(){
+                    return panelExpanded;
+                });
+
+                runs(function(){
+                    expect(panel.down('#nofoo').el.isVisible()).toBe(true);
+                });
+            });
+
+        });
+
+    });
+    
+    describe("stateful", function() {
+        describe("getState", function() {
+            describe("basic", function() {
+                beforeEach(function() {
+                    makePanel({
+                        title: 'foo',
+                        width: 300,
+                        height: 300,
+                        html: 'throbbe'
+                    });
+                });
+                    
+                it("should return empty object", function() {
+                    expect(panel.getState()).toEqual({});
+                });
+            });
+            
+            describe("collapsible", function() {
+                describe("via header", function() {
+                    describe("vertical", function() {
+                        beforeEach(function() {
+                            makePanel({
+                                collapsible: true,
+                                animCollapse: false,
+                                title: 'bar',
+                                width: 300,
+                                height: 300,
+                                html: 'gurgle'
+                            });
+        
+                            panel.collapse();
+                        });
+                        
+                        it("should populate properties", function() {
+                            expect(panel.getState()).toEqual({
+                                collapsed: {
+                                    height: 300,
+                                    'last.height': 300,
+                                    minHeight: null,
+                                    minWidth: null,
+                                    width: 300
+                                }
+                            });
+                        });
+                    });
+                    
+                    describe("horizontal", function() {
+                        beforeEach(function() {
+                            makePanel({
+                                collapsible: true,
+                                animCollapse: false,
+                                collapseDirection: 'left',
+                                title: 'bar',
+                                width: 300,
+                                height: 300,
+                                html: 'gurgle'
+                            });
+        
+                            panel.collapse();
+                        });
+                        
+                        it("should populate properties", function() {
+                            expect(panel.getState()).toEqual({
+                                collapsed: {
+                                    height: 300,
+                                    'last.width': 300,
+                                    minHeight: null,
+                                    minWidth: null,
+                                    width: 300
+                                }
+                            });
+                        });
+                    });
+                });
+                
+                describe("placeholder", function() {
+                    var ct, p;
+                    
+                    afterEach(function() {
+                        ct = p = Ext.destroy(ct);
+                    });
+                    
+                    describe("vertical", function() {
+                        beforeEach(function() {
+                            ct = new Ext.container.Container({
+                                renderTo: Ext.getBody(),
+                                width: 400,
+                                height: 400,
+                                layout: 'border',
+                                items: [{
+                                    title: 'North',
+                                    region: 'north',
+                                    collapsible: true,
+                                    animCollapse: false,
+                                    height: 200
+                                }, {
+                                    region: 'center'
+                                }]
+                            });
+                            
+                            p = ct.items.first();
+                            
+                            p.collapse();
+                        });
+                        
+                        it("should populate properties", function() {
+                            expect(p.getState()).toEqual({
+                                collapsed: {},
+                                weight: 20
+                            });
+                        });
+                    });
+                    
+                    describe("horizontal", function() {
+                        beforeEach(function() {
+                            ct = new Ext.container.Container({
+                                renderTo: Ext.getBody(),
+                                width: 400,
+                                height: 400,
+                                layout: 'border',
+                                items: [{
+                                    title: 'West',
+                                    region: 'west',
+                                    collapsible: true,
+                                    animCollapse: false,
+                                    width: 200
+                                }, {
+                                    region: 'center'
+                                }]
+                            });
+                            
+                            p = ct.items.first();
+                            
+                            p.collapse();
+                        });
+                        
+                        it("should populate properties", function() {
+                            expect(p.getState()).toEqual({
+                                collapsed: {},
+                                weight: -10
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
 });

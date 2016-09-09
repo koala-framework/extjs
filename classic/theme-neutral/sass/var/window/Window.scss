@@ -10,7 +10,12 @@ $window-base-color: dynamic($base-color);
 
 /**
  * @var {number}
- * The padding of Windows
+ * The padding of Windows.
+ * 
+ * The padding value must be equal to or greater than value specified in the 
+ * {@link #$window-border-radius} variable (or the maximum value if corner values 
+ * are specified individually).  
+ * See also: {@link #$window-ignore-frame-padding}
  */
 $window-padding: dynamic($panel-frame-padding);
 
@@ -225,7 +230,7 @@ $window-header-inner-border-color: dynamic(#fff);
 $window-header-inner-border-width: dynamic(0);
 
 /**
- * @var {boolean} $ui-force-header-border
+ * @var {boolean} $window-force-header-border
  * True to force the window header to have a border on the side facing the window body.
  * Overrides dock layout's border management border removal rules.
  */
@@ -270,7 +275,9 @@ $include-window-default-ui: dynamic($include-default-uis);
  * True to ignore the frame padding.  By default, the frame mixin adds extra padding when
  * border radius is larger than border width.  This is intended to prevent the content
  * from colliding with the rounded corners of the frame.  Set this to true to prevent
- * the window frame from adding this extra padding.
+ * the panel frame from adding this extra padding.
+ *
+ * **Note:** This var is not applicable to IE8 & IE9.
  */
 $window-ignore-frame-padding: dynamic($panel-ignore-frame-padding);
 

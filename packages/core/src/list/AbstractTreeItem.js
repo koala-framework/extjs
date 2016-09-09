@@ -5,49 +5,51 @@
 Ext.define('Ext.list.AbstractTreeItem', {
     extend: 'Ext.Widget',
 
+    isTreeListItem: true,
+
     /**
      * @method setExpandable
-     * @hide
+     * @ignore
      */
     
     /**
      * @method setExpanded
-     * @hide
+     * @ignore
      */
     
     /**
      * @method setIconCls
-     * @hide
+     * @ignore
      */
     
     /**
      * @method setLeaf
-     * @hide
+     * @ignore
      */
     
     /**
      * @method setOwner
-     * @hide
+     * @ignore
      */
     
     /**
      * @method setLoading
-     * @hide
+     * @ignore
      */
     
     /**
      * @method setNode
-     * @hide
+     * @ignore
      */
     
     /**
      * @method setParentItem
-     * @hide
+     * @ignore
      */
     
     /**
      * @method setText
-     * @hide
+     * @ignore
      */
 
     cachedConfig: {
@@ -66,18 +68,9 @@ Ext.define('Ext.list.AbstractTreeItem', {
         expanded: false,
 
         /**
-         * @cfg {Boolean} floated
-         * `true` if this item is current floated. This mode applies when the owning
-         * `{@link Ext.list.Tree treelist}` is in `{@link Ext.list.Tree#micro micro}`
-         * mode and the sub-tree under this item should be presented as a floating
-         * element.
-         */
-        floated: false,
-
-        /**
          * @cfg {String} iconCls
-         * The class to use as an icon for this item. This value is taken from
-         * the underlying {@link #node}.
+         * @inheritdoc Ext.panel.Header#cfg-iconCls
+         * @localdoc **Note:** This value is taken from the underlying {@link #node}.
          */
         iconCls: '',
 
@@ -118,7 +111,7 @@ Ext.define('Ext.list.AbstractTreeItem', {
         indent: null,
 
         /**
-         * @cfg {Ext.list.TreeList} owner
+         * @cfg {Ext.list.Tree} owner
          * The owning list for this container.
          */
         owner: null,
@@ -128,6 +121,16 @@ Ext.define('Ext.list.AbstractTreeItem', {
          * The backing node for this item.
          */
         node: null,
+
+        /**
+         * @cfg {Number} over
+         * One of three possible values:
+         *
+         *   - 0 if mouse is not over this item or any of its descendants.
+         *   - 1 if mouse is not over this item but is over one of this item's descendants.
+         *   - 2 if mouse is directly over this item.
+         */
+        over: null,
 
         /**
          * @cfg {Ext.list.AbstractTreeItem} parentItem
@@ -166,9 +169,11 @@ Ext.define('Ext.list.AbstractTreeItem', {
                 me.itemMap = map = {};
                 for (i = 0, len = childNodes.length; i < len; ++i) {
                     child = childNodes[i];
-                    item = owner.createItem(child, me);
-                    map[child.internalId] = item;
-                    me.insertItem(item, null);
+                    if (child.data.visible) {
+                        item = owner.createItem(child, me);
+                        map[child.internalId] = item;
+                        me.insertItem(item, null);
+                    }
                 }
             }
 
@@ -202,7 +207,9 @@ Ext.define('Ext.list.AbstractTreeItem', {
     },
 
     /**
-     * Gets the element to be used for the tree when it is in {@link Ext.list.Tree#mini mini} mode.
+     * @method
+     * Gets the element to be used for the tree when it is in 
+     * {@link Ext.list.Tree#micro micro} mode.
      * @return {Ext.dom.Element} The element.
      *
      * @protected
@@ -211,6 +218,7 @@ Ext.define('Ext.list.AbstractTreeItem', {
     getToolElement: Ext.emptyFn,
 
     /**
+     * @method
      * Append a new child item to the DOM.
      * @param {Ext.list.AbstractTreeItem} item The item to insert.
      * @param {Ext.list.AbstractTreeItem} refItem The item the node is to
@@ -230,6 +238,7 @@ Ext.define('Ext.list.AbstractTreeItem', {
     },
 
     /**
+     * @method
      * Checks whether the event is an event that should select this node.
      * @param {Ext.event.Event} e The event object.
      * @return {Boolean} `true` if the event should select this node.
@@ -240,6 +249,7 @@ Ext.define('Ext.list.AbstractTreeItem', {
     isSelectionEvent: Ext.emptyFn,
 
     /**
+     * @method
      * Checks whether the event is an event that should toggle the expand/collapse state.
      * @param {Ext.event.Event} e The event object.
      * @return {Boolean} `true` if the event should toggle the expand/collapsed state.
@@ -395,6 +405,8 @@ Ext.define('Ext.list.AbstractTreeItem', {
     },
 
     /**
+     * @method
+     *
      * Remove a child item from the DOM.
      * @param {Ext.list.AbstractTreeItem} item The item to remove.
      *
@@ -402,46 +414,6 @@ Ext.define('Ext.list.AbstractTreeItem', {
      * @template
      */
     removeItem: Ext.emptyFn,
-
-    updateFloated: function (floated) {
-        var me = this,
-            el = me.element,
-            placeholder = me.placeholder,
-            node, wasExpanded;
-
-        if (floated) {
-            placeholder = el.clone(false, true); // shallow, asDom
-            placeholder.id += '-placeholder'; // avoid duplicate id
-            me.placeholder = Ext.get(placeholder);
-
-            me.wasExpanded = me.getExpanded();
-            me.setExpanded(true);
-
-            el.dom.parentNode.insertBefore(placeholder, el.dom);
-
-            me.floater = me.createFloater(); // toolkit-specific
-        } else if (placeholder) {
-            wasExpanded = me.wasExpanded;
-            node = me.getNode();
-            me.setExpanded(wasExpanded);
-            if (!wasExpanded && node.isExpanded()) {
-                // If we have been floating and expanded a child, we may have been
-                // expanded as part of the ancestors. Attempt to restore state.
-                me.preventAnimation = true;
-                node.collapse();
-                me.preventAnimation = false;
-            }
-            me.floater.remove(me, false); // don't destroy
-            placeholder.dom.parentNode.insertBefore(el.dom, placeholder.dom);
-
-            placeholder.destroy();
-            me.floater.destroy();
-
-            me.placeholder = me.floater = null;
-
-            me.floatedByMouseOver = me.floatedByClick = false;
-        }
-    },
 
     /**
      * @inheritdoc
@@ -504,19 +476,53 @@ Ext.define('Ext.list.AbstractTreeItem', {
 
         /**
          * Handle a click on this item.
-         * @param {Ext.event.Event} The event.
+         * @param {Ext.event.Event} e The event
          *
          * @private
          */
         onClick: function (e) {
-            var me = this;
+            var me = this,
+                owner = me.getOwner(),
+                node = me.getNode(),
+                info = {
+                    event: e,
+                    item: me,
+                    node: node,
+                    tree: owner,
+                    select: node.get('selectable') !== false && me.isSelectionEvent(e),
+                    toggle: me.isToggleEvent(e)
+                };
 
-            if (me.isToggleEvent(e)) {
-                me.toggleExpanded();
-            }
+            /**
+             * @event itemclick
+             *
+             * @param {Ext.list.Tree} sender The `treelist` that fired this event.
+             *
+             * @param {Object} info
+             * @param {Ext.event.Event} info.event The DOM event that precipitated this
+             * event.
+             * @param {Ext.list.AbstractTreeItem} info.item The tree node that was clicked.
+             * @param {Ext.list.Tree} info.tree The `treelist` that fired this event.
+             * @param {Boolean} info.select On input this is value is the result of the
+             *   {@link #isSelectionEvent} method. On return from event handlers (assuming a
+             *   `false` return does not cancel things) this property is used to determine
+             *   if the clicked node should be selected.
+             * @param {Boolean} info.toggle On input this is value is the result of the
+             *   {@link #isToggleEvent} method. On return from event handlers (assuming a
+             *   `false` return does not cancel things) this property is used to determine
+             *   if the clicked node's expand/collapse state should be toggled.
+             *
+             * @since 6.0.1
+             */
+            if (owner.fireEvent('itemclick', owner, info) !== false) {
+                if (info.toggle) {
+                    me.toggleExpanded();
+                    e.preventDefault();
+                }
 
-            if (me.isSelectionEvent(e)) {
-                me.getOwner().setSelection(me.getNode());
+                if (info.select) {
+                    owner.setSelection(me.getNode());
+                }
             }
         },
 
@@ -535,6 +541,16 @@ Ext.define('Ext.list.AbstractTreeItem', {
             for (id in items) {
                 items[id].setIndent(value);
             }
+        },
+
+        /**
+         * Implementation so that the Traversable mixin which manipulates the parent
+         * axis can function in a TreeList.
+         * @param {Ext.list.Tree/Ext.list.TreeItem} owner The owner of this node.
+         * @private
+         */
+        updateOwner: function(owner) {
+            this.parent = owner;
         }
     }
 });

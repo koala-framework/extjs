@@ -73,8 +73,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
 
     //<feature legacyBrowser>
     if (Ext.isIE8) {
-        var removeNode = Ext.removeNode, // save a reference to the removeNode function defined in sencha-core
-            garbageBin = DOC.createElement('div'),
+        var garbageBin = DOC.createElement('div'),
             destroyQueue = [],
 
             // prevent memory leaks in IE8
@@ -91,16 +90,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 garbageBin.innerHTML = '';
                 destroyQueue.length = 0;
             }, 10);
-
-        Ext.removeNode = function(node) {
-            node = node.dom || node;
-            removeNode(node);
-            destroyQueue[destroyQueue.length] = node;
-
-            // Will perform extra IE8 cleanup in 10 milliseconds
-            // see http://social.msdn.microsoft.com/Forums/ie/en-US/c76967f0-dcf8-47d0-8984-8fe1282a94f5/ie-appendchildremovechild-memory-problem?forum=iewebdevelopment
-            clearGarbage();
-        };
     }
     //</feature>
 
@@ -123,6 +112,13 @@ Ext.define('Ext.overrides.dom.Element', (function() {
 
         _init: function (E) {
             Element = E; // now we can poke this into closure scope
+            
+            // We want to expose destroyQueue on the prototype for testing purposes
+            //<debug>
+            if (WIN.__UNIT_TESTING__) {
+                E.destroyQueue = destroyQueue;
+            }
+            //</debug>
             
             // Allow overriding the attribute name and/or selector; this is
             // done only once for performance reasons
@@ -150,7 +146,8 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 OBJECT: true,
                 SELECT: true,
                 TEXTAREA: true,
-                HTML: Ext.isIE ? true : false
+                HTML: Ext.isIE ? true : false,
+                BODY: Ext.isIE ? false: true
             },
 
             // <object> element is naturally tabbable only in IE8 and below
@@ -173,86 +170,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 // For '-ms-foo' we need msFoo
                 return propertyCache[prop] || (propertyCache[prop] = prop.replace(msRe, 'ms-').replace(camelRe, camelReplaceFn));
             }
-        },
-
-        /**
-         * Sets up event handlers to add and remove a css class when the mouse is down and then up on this element (a click effect)
-         * @param {String} className The class to add
-         * @param {Function} [testFn] A test function to execute before adding the class. The passed parameter
-         * will be the Element instance. If this functions returns false, the class will not be added.
-         * @param {Object} [scope] The scope to execute the testFn in.
-         * @return {Ext.dom.Element} this
-         */
-        addClsOnClick: function(className, testFn, scope) {
-            var me = this,
-                dom = me.dom,
-                hasTest = Ext.isFunction(testFn);
-                
-            me.on("mousedown", function() {
-                if (hasTest && testFn.call(scope || me, me) === false) {
-                    return false;
-                }
-                Ext.fly(dom).addCls(className);
-                var d = Ext.getDoc(),
-                    fn = function() {
-                        Ext.fly(dom).removeCls(className);
-                        d.removeListener("mouseup", fn);
-                    };
-                d.on("mouseup", fn);
-            });
-            return me;
-        },
-
-        /**
-         * Sets up event handlers to add and remove a css class when this element has the focus
-         * @param {String} className The class to add
-         * @param {Function} [testFn] A test function to execute before adding the class. The passed parameter
-         * will be the Element instance. If this functions returns false, the class will not be added.
-         * @param {Object} [scope] The scope to execute the testFn in.
-         * @return {Ext.dom.Element} this
-         */
-        addClsOnFocus: function(className, testFn, scope) {
-            var me = this,
-                dom = me.dom,
-                hasTest = Ext.isFunction(testFn);
-                
-            me.on("focus", function() {
-                if (hasTest && testFn.call(scope || me, me) === false) {
-                    return false;
-                }
-                Ext.fly(dom).addCls(className);
-            });
-            me.on("blur", function() {
-                Ext.fly(dom).removeCls(className);
-            });
-            return me;
-        },
-
-        /**
-         * Sets up event handlers to add and remove a css class when the mouse is over this element
-         * @param {String} className The class to add
-         * @param {Function} [testFn] A test function to execute before adding the class. The passed parameter
-         * will be the Element instance. If this functions returns false, the class will not be added.
-         * @param {Object} [scope] The scope to execute the testFn in.
-         * @return {Ext.dom.Element} this
-         */
-        addClsOnOver: function(className, testFn, scope) {
-            var me = this,
-                dom = me.dom,
-                hasTest = Ext.isFunction(testFn);
-                
-            me.hover(
-                function() {
-                    if (hasTest && testFn.call(scope || me, me) === false) {
-                        return;
-                    }
-                    Ext.fly(dom).addCls(className);
-                },
-                function() {
-                    Ext.fly(dom).removeCls(className);
-                }
-            );
-            return me;
         },
 
         /**
@@ -653,8 +570,12 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 data = me.getData(),
                 maskEl, maskMsg;
 
-            if (dom && me.isAnimate) {
-                me.stopAnimation();
+            if (dom) {
+                if (me.isAnimate) {
+                    me.stopAnimation();
+                }
+                
+                me.removeAnchor();
             }
 
             me.callParent();
@@ -949,7 +870,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
 
         /**
          * Gets an object with all CSS positioning properties. Useful along with
-         * #setPostioning to get snapshot before performing an update and then restoring
+         * `setPostioning` to get snapshot before performing an update and then restoring
          * the element.
          * @param {Boolean} [autoPx=false] true to return pixel values for "auto" styles.
          * @return {Object}
@@ -1466,44 +1387,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         },
 
         /**
-         * Monitors this Element for the mouse leaving. Calls the function after the specified delay only if
-         * the mouse was not moved back into the Element within the delay. If the mouse *was* moved
-         * back in, the function is not called.
-         * @param {Number} delay The delay **in milliseconds** to wait for possible mouse re-entry before calling the handler function.
-         * @param {Function} handler The function to call if the mouse remains outside of this Element for the specified time.
-         * @param {Object} [scope] The scope (`this` reference) in which the handler function executes. Defaults to this Element.
-         * @return {Object} The listeners object which was added to this element so that monitoring can be stopped. Example usage:
-         *
-         *     // Hide the menu if the mouse moves out for 250ms or more
-         *     this.mouseLeaveMonitor = this.menuEl.monitorMouseLeave(250, this.hideMenu, this);
-         *
-         *     ...
-         *     // Remove mouseleave monitor on menu destroy
-         *     this.menuEl.un(this.mouseLeaveMonitor);
-         *
-         */
-        monitorMouseLeave: function(delay, handler, scope) {
-            var me = this,
-                timer,
-                listeners = {
-                    mouseleave: function(e) {
-                        //<feature legacyBrowser>
-                        if (Ext.isIE9m) {
-                            e.enableIEAsync();
-                        }
-                        //</feature>
-                        timer = Ext.defer(handler, delay, scope || me, [e]);
-                    },
-                    mouseenter: function() {
-                        clearTimeout(timer);
-                    }
-                };
-
-            me.on(listeners);
-            return listeners;
-        },
-
-        /**
          * Fades the element out while slowly expanding it in all directions. When the effect is completed, the element will
          * be hidden (visibility = 'hidden') but block elements will still take up space in the document. Usage:
          *
@@ -1614,7 +1497,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          *     Ext.fly('elId').setHeight(150, {
          *         duration : 500, // animation will have a duration of .5 seconds
          *         // will change the content to "finished"
-         *         callback: function(){ this.{@link #setHtml}("finished"); }
+         *         callback: function(){ this.setHtml("finished"); }
          *     });
          *     
          * @param {Number/String} height The new height. This may be one of:
@@ -1699,11 +1582,17 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         /**
          * Updates the innerHTML of this element, optionally searching for and processing scripts.
          * @param {String} html The new HTML
-         * @param {Boolean} [loadScripts] True to look for and process scripts (defaults to false)
-         * @param {Function} [callback] For async script loading you can be notified when the update completes
+         * @param {Boolean} [loadScripts] Pass `true` to look for and process scripts.
+         * @param {Function} [callback] For async script loading you can be notified when the update completes.
+         * @param {Object} [scope=`this`] The scope (`this` reference) in which to execute the callback.
+         * 
+         * Also used as the scope for any *inline* script source if the `loadScripts` parameter is `true`.
+         * Scripts with a `src` attribute cannot be executed in this scope.
+         *
+         * Defaults to this Element.
          * @return {Ext.dom.Element} this
          */
-        setHtml: function(html, loadScripts, callback) {
+        setHtml: function(html, loadScripts, callback, scope) {
             var me = this,
                 id,
                 dom,
@@ -1751,10 +1640,14 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                        }
                        hd.appendChild(s);
                     } else if (match[2] && match[2].length > 0) {
-                        (WIN.execScript || WIN.eval)(match[2]); // jshint ignore:line
+                        if (scope) {
+                            Ext.functionFactory(match[2]).call(scope);
+                        } else {
+                            Ext.globalEval(match[2]);
+                        }
                     }
                 }
-                Ext.callback(callback, me);
+                Ext.callback(callback, scope || me);
             }, 20);
             dom.innerHTML = html.replace(replaceScriptTagRe, '');
             return me;
@@ -1795,7 +1688,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         },
 
         /**
-         * Set positioning with an object returned by #getPositioning.
+         * Set positioning with an object returned by `getPositioning`.
          * @param {Object} posCfg
          * @return {Ext.dom.Element} this
          */
@@ -1988,7 +1881,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          *     Ext.fly('elId').setWidth(150, {
          *         duration : 500, // animation will have a duration of .5 seconds
          *         // will change the content to "finished"
-         *         callback: function(){ this.{@link #setHtml}("finished"); }
+         *         callback: function(){ this.setHtml("finished"); }
          *     });
          *     
          * @param {Number/String} width The new width. This may be one of:
@@ -2353,8 +2246,8 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          * @param {Object} options (optional) Object literal with any of the {@link Ext.fx.Anim} config options
          * @return {Ext.dom.Element} The Element
          */
-        slideOut: function(anchor, o) {
-            return this.slideIn(anchor, o, true);
+        slideOut: function(anchor, options) {
+            return this.slideIn(anchor, options, true);
         },
 
         /**
@@ -2445,12 +2338,12 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          * @param {Object} options (optional) Object literal with any of the {@link Ext.fx.Anim} config options
          * @return {Ext.dom.Element} The Element
          */
-        switchOff: function(obj) {
+        switchOff: function(options) {
             var me = this,
                 dom = me.dom,
                 beforeAnim;
 
-            obj = Ext.applyIf(obj || {}, {
+            options = Ext.applyIf(options || {}, {
                 easing: 'ease-in',
                 duration: 500,
                 remove: false,
@@ -2470,8 +2363,8 @@ Ext.define('Ext.overrides.dom.Element', (function() {
 
                 keyframe = new Ext.fx.Animator({
                     target: dom,
-                    duration: obj.duration,
-                    easing: obj.easing,
+                    duration: options.duration,
+                    easing: options.easing,
                     keyframes: {
                         33: {
                             opacity: 0.3
@@ -2488,7 +2381,7 @@ Ext.define('Ext.overrides.dom.Element', (function() {
                 });
                 keyframe.on('afteranimate', function() {
                     var el = Ext.fly(dom, '_anim');
-                    if (obj.useDisplay) {
+                    if (options.useDisplay) {
                         el.setDisplayed(false);
                     } else {
                         el.hide();
@@ -2503,20 +2396,20 @@ Ext.define('Ext.overrides.dom.Element', (function() {
             
             me.animate({
                 // See "A Note About Wrapped Animations" at the top of this class:
-                duration: (Math.max(obj.duration, 500) * 2),
+                duration: (Math.max(options.duration, 500) * 2),
                 listeners: {
                     beforeanimate: {
                         fn: beforeAnim
                     }
                 },
-                callback: obj.callback,
-                scope: obj.scope
+                callback: options.callback,
+                scope: options.scope
             });
             return me;
         },
 
         /**
-         * @private.
+         * @private
          * Currently used for updating grid cells without modifying DOM structure
          *
          * Synchronizes content of this Element with the content of the passed element.
@@ -3418,6 +3311,73 @@ Ext.define('Ext.overrides.dom.Element', (function() {
             this.removeCls(syncRepaintCls);
         };
     }
+    
+    if (Ext.isIE10m) {
+        Ext.override(Element, {
+            focus: function(defer, dom) {
+                var me = this,
+                    ex;
+                
+                dom = dom || me.dom;
+                
+                if (Number(defer)) {
+                    Ext.defer(me.focus, defer, me, [null, dom]);
+                }
+                else {
+                    Ext.GlobalEvents.fireEvent('beforefocus', dom);
+                    
+                    // IE10m has an acute problem with focusing input elements;
+                    // when the element was just shown and did not have enough
+                    // time to initialize, focusing it might fail. The problem
+                    // is somewhat random in nature; most of the time focusing
+                    // an input element will succeed, failing only occasionally.
+                    // When it fails, the focus will be thrown to the document
+                    // body element, with subsequent focusout/focusin event pair
+                    // on the body, which throws off our focusenter/focusleave
+                    // processing.
+                    // Fortunately for us, when this focus failure happens, the
+                    // resulting focusout event will happen *synchronously*
+                    // unlike the normal focusing events which IE will fire
+                    // asynchronously. Also fortunately for us, in most cases
+                    // trying to focus the given element the second time
+                    // immediately after it failed to focus the first time
+                    // seems to do the trick; however when second focus attempt
+                    // succeeds, it will result in focusout on the body and
+                    // focusin on the given element, which again wreaks havoc
+                    // on our focusenter/focusleave handling.
+                    // The only workable solution we have is to pretend that
+                    // focus never went to the document body and ignore the
+                    // focusout and focusin caused by failed first focus attempt.
+                    // To this end, we fudge the event stream in Focus publisher
+                    // override.
+                    if (dom && (dom.tagName === 'INPUT' || dom.tagname === 'TEXTAREA')) {
+                        Ext.synchronouslyFocusing = document.activeElement;
+                    }
+                    
+                    // Also note that trying to focus an unfocusable element
+                    // might throw an exception in IE8. What a cute idea, MS. :(
+                    try {
+                        dom.focus();
+                    }
+                    catch (xcpt) {
+                        ex = xcpt;
+                    }
+                    
+                    // Ok so now we have this situation when we tried to focus
+                    // the first time but did not succeed. Let's try again but
+                    // not if there was an exception the first time - when the
+                    // "focus failure" happens it does so silently. :(
+                    if (Ext.synchronouslyFocusing && document.activeElement !== dom && !ex) {
+                        dom.focus();
+                    }
+                    
+                    Ext.synchronouslyFocusing = null;
+                }
+                
+                return me;
+            }
+        });
+    }
 
     Ext.apply(Ext, {
         /**
@@ -3439,25 +3399,6 @@ Ext.define('Ext.overrides.dom.Element', (function() {
          * and {@link Ext.LoadMask LoadMasks}
          */
         useShims: false,
-
-        /**
-         * @private
-         * Returns an HTML div element into which {@link Ext.container.Container#method-remove removed} components
-         * are placed so that their DOM elements are not garbage collected as detached Dom trees.
-         * @return {Ext.dom.Element}
-         * @member Ext
-         */
-        getDetachedBody: function () {
-            var detachedEl = Ext.detachedBodyEl;
-
-            if (!detachedEl) {
-                detachedEl = DOC.createElement('div');
-                Ext.detachedBodyEl = detachedEl = new Ext.dom.Fly(detachedEl);
-                detachedEl.isDetachedBody = true;
-            }
-
-            return detachedEl;
-        },
 
         getElementById: function (id) {
             var el = DOC.getElementById(id),
@@ -3989,6 +3930,10 @@ Ext.define('Ext.overrides.dom.Element', (function() {
             bodyCls.push(Ext.baseCSSPrefix + 'ie11');
         }
 
+        if (Ext.isEdge) {
+            bodyCls.push(Ext.baseCSSPrefix + 'edge');
+        }
+
         if (Ext.isGecko) {
             bodyCls.push(Ext.baseCSSPrefix + 'gecko');
         }
@@ -4021,6 +3966,9 @@ Ext.define('Ext.overrides.dom.Element', (function() {
         }
         if (supports.Touch) {
             bodyCls.push(Ext.baseCSSPrefix + 'touch');
+        }
+        if (Ext.os.deviceType) {
+            bodyCls.push(Ext.baseCSSPrefix + Ext.os.deviceType.toLowerCase());
         }
         //Ext.fly(document.documentElement).addCls(htmlCls);
 

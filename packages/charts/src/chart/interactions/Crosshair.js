@@ -85,7 +85,6 @@
  *         }
  *     });
  */
-
 Ext.define('Ext.chart.interactions.Crosshair', {
 
     extend: 'Ext.chart.interactions.Abstract',
@@ -189,7 +188,7 @@ Ext.define('Ext.chart.interactions.Crosshair', {
 
     updateChart: function (chart) {
         if (chart && !chart.isCartesian) {
-            throw 'Crosshair interaction can only be used on cartesian charts.';
+            Ext.raise("Crosshair interaction can only be used on cartesian charts.");
         }
         this.callParent(arguments);
     },
@@ -223,6 +222,8 @@ Ext.define('Ext.chart.interactions.Crosshair', {
             title, titleBBox, titlePadding,
             horizontalLineCfg, verticalLineCfg,
             i;
+
+        e.claimGesture();
 
         if (x > 0 && x < chartWidth && y > 0 && y < chartHeight) {
             me.lockEvents(me.getGesture());

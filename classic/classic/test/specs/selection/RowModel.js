@@ -1,5 +1,16 @@
 describe('Ext.selection.RowModel', function () {
-    var grid, view, selModel, store, columns, cell, rawData;
+    var grid, view, selModel, navModel, store, columns, cell, rawData,
+        synchronousLoad = true,
+        proxyStoreLoad = Ext.data.ProxyStore.prototype.load,
+        loadStore = function() {
+            proxyStoreLoad.apply(this, arguments);
+            if (synchronousLoad) {
+                this.flushLoad.apply(this, arguments);
+            }
+            return this;
+        },
+        cellSelectedCls = Ext.view.Table.prototype.selectedCellCls,
+        itemSelectedCls = Ext.view.Table.prototype.selectedItemCls;
 
     function createStore (config) {
         return new Ext.data.Store(Ext.apply({
@@ -34,10 +45,14 @@ describe('Ext.selection.RowModel', function () {
         }
 
         view = grid.getView();
+        navModel = view.getNavigationModel();
         columns = grid.view.getVisibleColumnManager().getColumns();
     }
 
     beforeEach(function() {
+        // Override so that we can control asynchronous loading
+        Ext.data.ProxyStore.prototype.load = loadStore;
+
         rawData = [
             { id: 1, name: 'Phil' },
             { id: 2, name: 'Ben' },
@@ -49,6 +64,9 @@ describe('Ext.selection.RowModel', function () {
     });
 
     afterEach(function () {
+        // Undo the overrides.
+        Ext.data.ProxyStore.prototype.load = proxyStoreLoad;
+
         Ext.destroy(grid, selModel);
         rawData = store = grid = selModel = null;
     });
@@ -60,7 +78,6 @@ describe('Ext.selection.RowModel', function () {
                 { text: 'Name',  dataIndex: 'name' }
             ]
         });
-        var navModel = view.getNavigationModel();
 
         navModel.setPosition(0, 0, null, null, true);
 
@@ -91,7 +108,75 @@ describe('Ext.selection.RowModel', function () {
         selModel.select(0);
         grid.getStore().sort('name', 'ASC');
 
-        expect(grid.getView().getNode(2).firstChild).not.toHaveCls('x-grid-cell-selected');
+        expect(grid.getView().getNode(2).firstChild).not.toHaveCls(cellSelectedCls);
+    });
+
+    it('SINGLE select mode should not select on CTRL/click (EXTJS-18592)', function() {
+        createGrid({}, {
+            selType: 'rowmodel', // rowmodel is the default selection model
+            mode: 'SINGLE',
+            allowDeselect: true,
+            toggleOnClick: false
+        });
+
+        // Select row 1
+        cell = grid.view.getCell(0, columns[0]);
+        jasmine.fireMouseEvent(cell, 'click');
+        var selection = selModel.getSelection();
+
+        // Row 0 should be selected
+        expect(grid.view.all.item(0).hasCls(itemSelectedCls)).toBe(true);
+        expect(selection.length).toBe(1);
+        expect(selection[0] === grid.store.getAt(0)).toBe(true);
+
+        // CTRL/click on row 2. Should NOT select that row
+        cell = grid.view.getCell(1, columns[0]);
+        jasmine.fireMouseEvent(cell, 'click', null, null, null, false, true);
+        var selection = selModel.getSelection();
+
+        // Row 0 should be still be selected
+        expect(grid.view.all.item(0).hasCls(itemSelectedCls)).toBe(true);
+        expect(selection.length).toBe(1);
+        expect(selection[0] === grid.store.getAt(0)).toBe(true);
+
+        // Row 1 not selected
+        expect(grid.view.all.item(1).hasCls(itemSelectedCls)).toBe(false);
+    });
+
+    it('SINGLE select mode should select on RIGHT/LEFT wrap to different row', function() {
+        createGrid({}, {
+            selType: 'rowmodel', // rowmodel is the default selection model
+            mode: 'SINGLE'
+        });
+
+        // Select row 2 by clicking on its first column
+        cell = grid.view.getCell(1, columns[0]);
+        jasmine.fireMouseEvent(cell, 'click');
+        var selection = selModel.getSelection();
+
+        // Row 2 should be selected
+        expect(grid.view.all.item(1).hasCls(itemSelectedCls)).toBe(true);
+        expect(selection.length).toBe(1);
+        expect(selection[0] === grid.store.getAt(1)).toBe(true);
+
+        // LEFT from there should select row 1
+        jasmine.fireKeyEvent(navModel.getPosition().getCell(true), 'keydown', Ext.event.Event.LEFT);
+        var selection = selModel.getSelection();
+
+        // Row 1 should be now be selected
+        expect(grid.view.all.item(0).hasCls(itemSelectedCls)).toBe(true);
+        expect(selection.length).toBe(1);
+        expect(selection[0] === grid.store.getAt(0)).toBe(true);
+
+        // RIGHT from there should select row 2
+        jasmine.fireKeyEvent(navModel.getPosition().getCell(true), 'keydown', Ext.event.Event.RIGHT);
+        var selection = selModel.getSelection();
+
+        // Row 2 should be now be selected
+        expect(grid.view.all.item(1).hasCls(itemSelectedCls)).toBe(true);
+        expect(selection.length).toBe(1);
+        expect(selection[0] === grid.store.getAt(1)).toBe(true);
+
     });
 
     it('should not allow deselect on SPACE if configured allowDeselect:false', function () {
@@ -105,7 +190,7 @@ describe('Ext.selection.RowModel', function () {
         var selection = selModel.getSelection();
 
         // Row 0 should be selected
-        expect(grid.view.all.item(0).hasCls('x-grid-item-selected')).toBe(true);
+        expect(grid.view.all.item(0).hasCls(itemSelectedCls)).toBe(true);
         expect(selection.length).toBe(1);
         expect(selection[0] === grid.store.getAt(0)).toBe(true);
 
@@ -114,7 +199,7 @@ describe('Ext.selection.RowModel', function () {
 
         // Row 0 should still be selected
         selection = selModel.getSelection();
-        expect(grid.view.all.item(0).hasCls('x-grid-item-selected')).toBe(true);
+        expect(grid.view.all.item(0).hasCls(itemSelectedCls)).toBe(true);
         expect(selection.length).toBe(1);
         expect(selection[0] === grid.store.getAt(0)).toBe(true);
 
@@ -124,7 +209,7 @@ describe('Ext.selection.RowModel', function () {
 
         // Row 0 should not be selected
         selection = selModel.getSelection();
-        expect(grid.view.all.item(0).hasCls('x-grid-item-selected')).toBe(false);
+        expect(grid.view.all.item(0).hasCls(itemSelectedCls)).toBe(false);
         expect(selection.length).toBe(0);
     });
 

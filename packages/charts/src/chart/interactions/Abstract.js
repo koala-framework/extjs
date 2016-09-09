@@ -61,12 +61,6 @@ Ext.define('Ext.chart.interactions.Abstract', {
         me.mixins.observable.constructor.call(me, config);
     },
 
-    /**
-     * @protected
-     * A method to be implemented by subclasses where all event attachment should occur.
-     */
-    initialize: Ext.emptyFn,
-
     updateChart: function (newChart, oldChart) {
         var me = this;
 
@@ -97,13 +91,15 @@ Ext.define('Ext.chart.interactions.Abstract', {
     },
 
     /**
+     * @method
      * @protected
      * Placeholder method.
      */
     onGesture: Ext.emptyFn,
 
     /**
-     * @protected Find and return a single series item corresponding to the given event,
+     * @protected
+     * Find and return a single series item corresponding to the given event,
      * or null if no matching item is found.
      * @param {Event} e
      * @return {Object} the item object or null if none found.
@@ -117,7 +113,8 @@ Ext.define('Ext.chart.interactions.Abstract', {
     },
 
     /**
-     * @protected Find and return all series items corresponding to the given event.
+     * @protected
+     * Find and return all series items corresponding to the given event.
      * @param {Event} e
      * @return {Array} array of matching item objects
      */
@@ -211,15 +208,6 @@ Ext.define('Ext.chart.interactions.Abstract', {
         var chart = this.getChart();
         return chart.lockedEvents || (chart.lockedEvents = {});
     },
-
-    isMultiTouch: function () {
-        if (Ext.browser.is.IE10) {
-            return true;
-        }
-        return !Ext.os.is.Desktop;
-    },
-
-    initializeDefaults: Ext.emptyFn,
 
     doSync: function () {
         var me = this,
